@@ -4,7 +4,7 @@ import { Facebook, Instagram, Mail } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg text-white py-6 mt-10">
+    <footer className="bg text-white p-6 mt-10">
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between">
         
         {/* Logo / Name */}
