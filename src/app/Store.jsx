@@ -124,7 +124,7 @@ export default function StorePage() {
       )}
 
       {/* عرض المنتجات */}
-      <div className="p-2 grid gap-12 grid-cols-1 sm:grid-cols-3 md:grid-cols-4 bg-gray-200">
+      <div className="p-2 grid gap-12 grid-cols-1 sm:grid-cols-3 md:grid-cols-4 ">
         {filteredProducts.map((product) => (
           <Link href={`/product/${product.id}`} key={product.id}>
             <div

@@ -33,7 +33,7 @@ export default function Nav() {
           )}
          
         </Link>
-                        <Link href="/cart" className='m-2'> <FontAwesomeIcon className=" fa-solid fa-cart-shopping text-white w-20 text-3xl  " icon={faWhatsapp} />
+                        <Link href="https://wa.me/+201070001014" className='m-2'> <FontAwesomeIcon className=" fa-solid fa-cart-shopping text-white w-20 text-3xl  " icon={faWhatsapp} />
                 </Link> 
           </div>
       </div>
