@@ -141,6 +141,317 @@ const products = [
     colors: ["brown"],
     type: "casual",
   },
+        {
+    id: 10,
+    name: "Elegant blouse with lace rose embroidery on the shoulders",
+    price: 5800,
+    description: "..",
+    picture: [
+      "/casual/Elegant blouse with lace rose embroidery on the shoulders.jpg",
+      "/casual/Elegant blouse with lace rose embroidery on the shoulders1.jpg",
+      "/casual/Elegant blouse with lace rose embroidery on the shoulders2.jpg",
+      "/casual/Elegant blouse with lace rose embroidery on the shoulders3.jpg",
+      "/casual/Elegant blouse with lace rose embroidery on the shoulders4.jpg",
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M", "L", "XL"],
+    colors: ["cyan"],
+    type: "casual",
+  },
+        {
+    id: 11,
+    name: "Elegant dress with a prominent pattern and a luxurious cut at the waist",
+    price: 5800,
+    description: "..",
+    picture: [
+      "/casual/Elegant dress with a prominent pattern and a luxurious cut at the waist.jpg",
+      "/casual/Elegant dress with a prominent pattern and a luxurious cut at the waist1.jpg",
+      "/casual/Elegant dress with a prominent pattern and a luxurious cut at the waist2.jpg",
+      "/casual/Elegant dress with a prominent pattern and a luxurious cut at the waist3.jpg",
+      "/casual/Elegant dress with a prominent pattern and a luxurious cut at the waist4.jpg",
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M", "L", "XL"],
+    colors: ["yellow"],
+    type: "casual",
+  },
+        {
+    id: 12,
+    name: "Elegant dress with rose embroidery and shoulder ties",
+    price: 5800,
+    description: "..",
+    picture: [
+      "/casual/Elegant dress with rose embroidery and shoulder ties.jpg",
+      "/casual/Elegant dress with rose embroidery and shoulder ties1.jpg",
+      "/casual/Elegant dress with rose embroidery and shoulder ties2.jpg",
+      "/casual/Elegant dress with rose embroidery and shoulder ties3.jpg",
+      "/casual/Elegant dress with rose embroidery and shoulder ties4.jpg",
+      "/casual/Elegant dress with rose embroidery and shoulder ties5.jpg",
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M", "L", "XL"],
+    colors: ["cyan", "pink" ],
+    type: "casual",
+  },
+        {
+    id: 13,
+    name: "Elegant dress with prominent print",
+    price: 5800,
+    description: "..",
+    picture: [
+      "/casual/Elegant dress with prominent print.jpg",
+      "/casual/Elegant dress with prominent print1.jpg",
+      "/casual/Elegant dress with prominent print2.jpg",
+      "/casual/Elegant dress with prominent print3.jpg",
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M", "L", "XL"],
+    colors: ["pink" , "cyan"],
+    type: "casual",
+  },
+        {
+    id: 14,
+    name: "Elegant floral dress",
+    price: 5800,
+    description: "..",
+    picture: [
+      "/casual/Elegant floral dress.jpg",
+      "/casual/Elegant floral dress1.jpg",
+      "/casual/Elegant floral dress2.jpg",
+
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M", "L", "XL"],
+    colors: ["white"],
+    type: "casual",
+  },
+        {
+    id: 15,
+    name: "Elegant long and luxurious dress with lace fabric embroidered with roses",
+    price: 5800,
+    description: "..",
+    picture: [
+      "/casual/Elegant long and luxurious dress with lace fabric embroidered with roses.jpg",
+      "/casual/Elegant long and luxurious dress with lace fabric embroidered with roses1.jpg",
+      "/casual/Elegant long and luxurious dress with lace fabric embroidered with roses2.jpg",
+      "/casual/Elegant long and luxurious dress with lace fabric embroidered with roses3.jpg",
+
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M", "L", "XL"],
+    colors: ["red" , "black"],
+    type: "casual",
+  },
+        {
+    id: 16,
+    name: "Elegant long dress with pleats at the bottom",
+    price: 5800,
+    description: "..",
+    picture: [
+      "/casual/Elegant long dress with pleats at the bottom.jpg",
+      "/casual/Elegant long dress with pleats at the bottom1.jpg",
+      "/casual/Elegant long dress with pleats at the bottom2.jpg",
+      "/casual/Elegant long dress with pleats at the bottom3.jpg",
+      "/casual/Elegant long dress with pleats at the bottom4.jpg",
+
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M", "L", "XL"],
+    colors: ["black"],
+    type: "casual",
+  },
+        {
+    id: 17,
+    name: "three dimensional flowers waist small a pendulum ",
+    price: 5800,
+    description: "..",
+    picture: [
+      "/casual/three dimensional flowers waist small a pendulum .jpg",
+      "/casual/three dimensional flowers waist small a pendulum 1.jpg",
+      "/casual/three dimensional flowers waist small a pendulum 2.jpg",
+      "/casual/three dimensional flowers waist small a pendulum 3.jpg",
+      "/casual/three dimensional flowers waist small a pendulum 4.jpg",
+      "/casual/three dimensional flowers waist small a pendulum 5.jpg",
+      "/casual/three dimensional flowers waist small a pendulum 6.jpg",
+
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M", "L", "XL"],
+    colors: ["darkred" , "teal" ,"wheat"],
+    type: "casual",
+  },
+        {
+    id: 18,
+    name: "Elegant long summer dress with a tie at the back",
+    price: 5800,
+    description: "..",
+    picture: [
+      "/casual/Elegant long summer dress with a tie at the back.jpg",
+      "/casual/Elegant long summer dress with a tie at the back1.jpg",
+      "/casual/Elegant long summer dress with a tie at the back2.jpg",
+      "/casual/Elegant long summer dress with a tie at the back3.jpg",
+      "/casual/Elegant long summer dress with a tie at the back4.jpg",
+      "/casual/Elegant long summer dress with a tie at the back5.jpg",
+
+
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M", "L", "XL"],
+    colors: ["wheat"],
+    type: "casual",
+  },
+          {
+    id: 19,
+    name: "Elegant short dress with pleats at the bottom and luxurious pearl embroidery",
+    price: 5800,
+    description: "..",
+    picture: [
+      "/casual/Elegant short dress with pleats at the bottom and luxurious pearl embroidery.jpg",
+      "/casual/Elegant short dress with pleats at the bottom and luxurious pearl embroidery1.jpg",
+      "/casual/Elegant short dress with pleats at the bottom and luxurious pearl embroidery2.jpg",
+      "/casual/Elegant short dress with pleats at the bottom and luxurious pearl embroidery3.jpg",
+      "/casual/Elegant short dress with pleats at the bottom and luxurious pearl embroidery4.jpg",
+      "/casual/Elegant short dress with pleats at the bottom and luxurious pearl embroidery5.jpg",
+
+
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M", "L", "XL"],
+    colors: ["pink" , "cyan"],
+    type: "casual",
+  },
+          {
+    id: 20,
+    name: "Luxury rose-shaped blouse",
+    price: 5800,
+    description: "..",
+    picture: [
+      "/casual/Luxury rose-shaped blouse.jpg",
+      "/casual/Luxury rose-shaped blouse1.jpg",
+      "/casual/Luxury rose-shaped blouse2.jpg",
+      "/casual/Luxury rose-shaped blouse3.jpg",
+
+
+
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M", "L", "XL"],
+    colors: ["red" , "gray"],
+    type: "casual",
+  },
+          {
+    id: 21,
+    name: "Miu Miu casual set",
+    price: 5800,
+    description: "..",
+    picture: [
+      "/casual/Miu Miu casual set.jpg",
+      "/casual/Miu Miu casual set1.jpg",
+
+
+
+
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M", "L", "XL"],
+    colors: ["lightsteelblue"],
+    type: "casual",
+  },
+          {
+    id: 22,
+    name: "Modern women's blouse",
+    price: 5800,
+    description: "..",
+    picture: [
+      "/casual/Modern women's blouse.jpg",
+      "/casual/Modern women's blouse1.jpg",
+      "/casual/Modern women's blouse2.jpg",
+      "/casual/Modern women's blouse3.jpg",
+      "/casual/Modern women's blouse4.jpg",
+      "/casual/Modern women's blouse5.jpg",
+
+
+
+
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M", "L", "XL"],
+    colors: ["white"  ,"lightsteelblue" , "gray" ,"red " ,"black" ,"orangered" ],
+    type: "casual",
+  },
+          {
+    id: 23,
+    name: "Short jumpsuit with a unique and modern cut",
+    price: 5800,
+    description: "..",
+    picture: [
+      "/casual/Short jumpsuit with a unique and modern cut.jpg",
+      "/casual/Short jumpsuit with a unique and modern cut1.jpg",
+      "/casual/Short jumpsuit with a unique and modern cut2.jpg",
+      "/casual/Short jumpsuit with a unique and modern cut3.jpg",
+      "/casual/Short jumpsuit with a unique and modern cut4.jpg",
+      "/casual/Short jumpsuit with a unique and modern cut5.jpg",
+
+
+
+
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M", "L", "XL"],
+    colors: ["white" ],
+    type: "casual",
+  },
+          {
+    id: 24,
+    name: "Short luxury dress with a bow on the chest",
+    price: 5800,
+    description: "..",
+    picture: [
+      "/casual/Short luxury dress with a bow on the chest.jpg",
+      "/casual/Short luxury dress with a bow on the chest1.jpg",
+      "/casual/Short luxury dress with a bow on the chest2.jpg",
+      "/casual/Short luxury dress with a bow on the chest3.jpg",
+      "/casual/Short luxury dress with a bow on the chest4.jpg",
+
+
+
+
+
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M", "L", "XL"],
+    colors: ["moccasin" ],
+    type: "casual",
+  },
+          {
+    id: 25,
+    name: "Summer set with modern embroidery",
+    price: 5800,
+    description: "..",
+    picture: [
+      "/casual/Summer set with modern embroidery.jpg",
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M", "L", "XL"],
+    colors: ["moccasin" ],
+    type: "casual",
+  },
 ];
 
 export default products;

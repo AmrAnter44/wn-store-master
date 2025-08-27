@@ -151,13 +151,13 @@ export default function StorePage() {
                       : product.name}
                   </h2>
                   <div className="flex flex-col">
-                    {product.colors?.slice(0, 3).map((color) => (
+                    {product.colors ?.length>1 ?  product.colors?.slice(0, 3).map((color) => (
                       <div
                         key={color}
                         className="w-4 h-4 border rounded-full m-1"
-                        style={{ backgroundColor: color }}
+                        style={{ backgroundColor: color }} 
                       />
-                    ))}
+                    )) : null}
                   </div>
                 </div>
                 <div className="flex flex-row justify-between">

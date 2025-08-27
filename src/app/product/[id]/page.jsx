@@ -86,6 +86,7 @@ export default function ProductDetail() {
 {/* الألوان */}
 {/* الألوان */}
 <div className="flex my-4">
+  {product.colors.length >1 }
   {product.colors?.map((color, index) => {
     const isSelected = selectedColor === color;
     return (
@@ -187,7 +188,7 @@ export default function ProductDetail() {
           </div>
 
           <div className="mt-auto text-gray-500">
-            <h3 className="border-b-2 border-gray-200 mb-5">Description</h3>
+            <h3 className=" border-gray-200 mb-5">Description</h3>
             <ul className="list-disc list-inside">
               <li>Fast delivery and shipping</li>
               <li>Secure online payment</li>
@@ -197,8 +198,8 @@ export default function ProductDetail() {
       </div>
 
       {/* منتجات مشابهة */}
-      <div className="w-80% mx-auto text-center">
-        <h4 className="text-2xl font-bold my-3 mx-auto">You may also like</h4>
+      <div className="w-80% mx-auto text-center bg-white">
+        <h4 className="text-2xl font-bold my-3 mx-auto bg-white bgg">You may also like</h4>
         <Store />
       </div>
     </>
