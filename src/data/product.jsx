@@ -27,7 +27,7 @@ const products = [
     quantity: 0,
     soldOut: false,
     sizes: ["M", "L", "XL"],
-    colors: ["black"],
+    colors: [""],
     type: "dress",
   },
   {
@@ -91,7 +91,7 @@ const products = [
     quantity: 0,
     soldOut: false,
     sizes: ["M", "L", "XL"],
-    colors: ["white"],
+    colors: [""],
     type: "casual",
   },
       {
@@ -138,7 +138,7 @@ const products = [
     quantity: 0,
     soldOut: false,
     sizes: ["M", "L", "XL"],
-    colors: ["brown"],
+    colors: [""],
     type: "casual",
   },
         {
@@ -156,7 +156,7 @@ const products = [
     quantity: 0,
     soldOut: false,
     sizes: ["M", "L", "XL"],
-    colors: ["cyan"],
+    colors: [""],
     type: "casual",
   },
         {
@@ -174,7 +174,7 @@ const products = [
     quantity: 0,
     soldOut: false,
     sizes: ["M", "L", "XL"],
-    colors: ["yellow"],
+    colors: [""],
     type: "casual",
   },
         {
@@ -227,7 +227,7 @@ const products = [
     quantity: 0,
     soldOut: false,
     sizes: ["M", "L", "XL"],
-    colors: ["white"],
+    colors: [""],
     type: "casual",
   },
         {
@@ -264,7 +264,7 @@ const products = [
     quantity: 0,
     soldOut: false,
     sizes: ["M", "L", "XL"],
-    colors: ["black"],
+    colors: [""],
     type: "casual",
   },
         {
@@ -306,7 +306,7 @@ const products = [
     quantity: 0,
     soldOut: false,
     sizes: ["M", "L", "XL"],
-    colors: ["wheat"],
+    colors: [""],
     type: "casual",
   },
           {
@@ -366,7 +366,7 @@ const products = [
     quantity: 0,
     soldOut: false,
     sizes: ["M", "L", "XL"],
-    colors: ["lightsteelblue"],
+    colors: [""],
     type: "casual",
   },
           {
@@ -412,7 +412,7 @@ const products = [
     quantity: 0,
     soldOut: false,
     sizes: ["M", "L", "XL"],
-    colors: ["white" ],
+    colors: [""],
     type: "casual",
   },
           {
@@ -449,7 +449,7 @@ const products = [
     quantity: 0,
     soldOut: false,
     sizes: ["M", "L", "XL"],
-    colors: ["moccasin" ],
+    colors: [""],
     type: "casual",
   },
 ];

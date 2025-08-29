@@ -4,56 +4,77 @@ import { useMyContext } from "../../context/CartContext";
 import { useRouter } from "next/navigation";
 
 export default function Page() {
+  // جايب cart و clearCart من Context
   const { cart, clearCart } = useMyContext();
+
+  // state لتخزين بيانات الفورم
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
+  // الفانكشن اللي بتبعت الأوردر على واتساب
   const handleSendWhatsApp = () => {
-    setErrorMessage("");
+    setErrorMessage(""); // مسح أي Error قديم
 
+    // لو الكارت فاضي
     if (cart.length === 0) {
       setErrorMessage("Your cart is empty. Please add at least one product.");
       return;
     }
 
+    // لو البيانات ناقصة
     if (!name || !address || !phone) {
       setErrorMessage("Please fill in all fields.");
       return;
     }
 
+    // شرط رقم الموبايل
     if (!phone.startsWith("01")) {
       setErrorMessage("Phone number must start with 01.");
       return;
     }
-
     if (phone.length < 11) {
       setErrorMessage("Phone number must be at least 11 digits.");
       return;
     }
 
-    // تفاصيل المنتجات
+    // ----------------------------
+    // تفاصيل المنتجات في الكارت
+    // ----------------------------
     let cartDetails = "";
     cart.forEach((item) => {
       const itemPrice = item.newPrice ? item.newPrice : item.price;
       cartDetails += `${item.name}\n`;
       cartDetails += `Quantity: ${item.quantity}\n`;
-      cartDetails += `Color: ${item.selectedColor}\n`;
-      cartDetails += `Size: ${item.selectedSize}\n`;
+
+      // إضافة اللون لو مش فاضي
+      if (item.selectedColor && item.selectedColor.trim() !== "") {
+        cartDetails += `Color: ${item.selectedColor}\n`;
+      }
+
+      // إضافة المقاس لو مش فاضي
+      if (item.selectedSize && item.selectedSize.trim() !== "") {
+        cartDetails += `Size: ${item.selectedSize}\n`;
+      }
+
       cartDetails += `Price: ${itemPrice} EGP\n`;
       cartDetails += "-------------------------\n";
     });
 
-    // حساب التوتال
+    // ----------------------------
+    // حساب إجمالي السعر
+    // ----------------------------
     const total = cart.reduce(
       (acc, item) =>
         acc + (item.newPrice ? item.newPrice : item.price) * item.quantity,
       0
     );
 
-    // الرسالة النهائية
+    // ----------------------------
+    // الرسالة النهائية اللي هتتبعت
+    // ----------------------------
     const message =
       `New Order From WN Store:\n\n` +
       `Name: ${name}\n` +
@@ -62,11 +83,14 @@ export default function Page() {
       `Products:\n${cartDetails}` +
       `Total: ${total} EGP\n`;
 
+    // رقم واتساب صاحب المتجر
     const yourWhatsAppNumber = "201028518754";
     const encodedMessage = encodeURIComponent(message);
 
+    // فتح واتساب بالرسالة الجاهزة
     window.open(`https://wa.me/${yourWhatsAppNumber}?text=${encodedMessage}`, "_blank");
 
+    // مسح الكارت وتحويل لصفحة النجاح
     clearCart();
     router.push("/succses");
   };
@@ -75,12 +99,14 @@ export default function Page() {
     <div className="max-w-md mx-auto p-4 justify-center">
       <h1 className="text-2xl font-bold mb-4">Checkout</h1>
 
+      {/* رسالة الخطأ */}
       {errorMessage && (
         <div className="bg-red-100 text-red-700 p-2 rounded mb-3 text-sm">
           {errorMessage}
         </div>
       )}
 
+      {/* فورم البيانات */}
       <input
         type="text"
         placeholder="Name"
@@ -103,6 +129,7 @@ export default function Page() {
         onChange={(e) => setAddress(e.target.value)}
       />
 
+      {/* زرار تأكيد الطلب */}
       <button
         onClick={handleSendWhatsApp}
         className="bg text-white px-4 py-2 rounded mx-auto"

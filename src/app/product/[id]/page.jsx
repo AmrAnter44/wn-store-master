@@ -10,8 +10,8 @@ export default function ProductDetail() {
   const { id } = useParams();
   const { addToCart } = useMyContext();
   const product = products.find((p) => p.id == id);
-  
-  // أول لون وأول مقاس مختارين افتراضيًا
+
+  // أول لون وأول مقاس افتراضيًا
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0] || "");
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || "");
   const [selected, setSelected] = useState(product.picture[0] || "");
@@ -19,11 +19,12 @@ export default function ProductDetail() {
 
   if (!product) return <div className="p-10 text-center">Product not found</div>;
 
+  // إضافة المنتج للسلة
   const handleAddToCart = () => {
-    if (!selectedColor || !selectedSize) {
+    if (!selectedSize) {
       setMessage({
         type: "error",
-        text: "⚠ Please select a color and size",
+        text: "⚠ Please select a size",
       });
       return;
     }
@@ -44,6 +45,7 @@ export default function ProductDetail() {
   return (
     <>
       <div className="w-80% mx-auto p-6 bg-white flex lg:flex-row flex-col justify-evenly lg:cdh-180">
+        {/* صور المنتج */}
         <div className="flex flex-col-reverse">
           {/* الصور المصغرة */}
           <div className="h-[80px] mr-4 flex gap-3 m-1">
@@ -64,10 +66,12 @@ export default function ProductDetail() {
           </div>
         </div>
 
+        {/* تفاصيل المنتج */}
         <div className="flex flex-col">
           <h1 className="text-2xl font-bold my-3">{product.name}</h1>
           <p className="my-3 text-gray-700">{product.description}</p>
 
+          {/* السعر */}
           {product.newPrice ? (
             <div className="flex justify-between">
               <p className="bgg font-bold text-xl text-start">
@@ -78,76 +82,56 @@ export default function ProductDetail() {
               </p>
             </div>
           ) : (
-            <p className="  text-xl text-start">
-              {product.price}.LE
-            </p>
+            <p className="text-xl text-start">{product.price}.LE</p>
           )}
 
-{/* الألوان */}
-{/* الألوان */}
-<div className="flex my-4">
-  {product.colors.length >1 }
-  {product.colors?.map((color, index) => {
-    const isSelected = selectedColor === color;
-    return (
-      <button
-        key={color}
-        onClick={() => {
-          setSelectedColor(color);
-          setSelected(product.picture[index]); // يغير الصورة حسب اللون
-        }}
-        className={`w-8 h-8 rounded-full m-1 flex items-center justify-center ${
-          isSelected ? "animate-spin-slow" : ""
-        }`}
-        style={{
-          background: isSelected
-            ? `conic-gradient(white 0deg 180deg, black 180deg 360deg)`
-            : "transparent",
-          padding: isSelected ? "2px" : "0px",
-          border: isSelected ? "none" : "1px solid black",
-        }}
-      >
-        <span
-          className="w-full h-full rounded-full"
-          style={{ backgroundColor: color }}
-        ></span>
-      </button>
-    );
-  })}
-</div>
+          {/* الألوان (تظهر فقط لو فيه أكتر من لون) */}
+          {product.colors && product.colors.length > 1 && (
+            <div className="flex my-4">
+              {product.colors.map((color, index) => {
+                const isSelected = selectedColor === color;
+                return (
+                  <button
+                    key={color}
+                    onClick={() => {
+                      setSelectedColor(color);
+                      setSelected(product.picture[index]); // يغير الصورة حسب اللون
+                    }}
+                    className={`w-8 h-8 rounded-full m-1 flex items-center justify-center ${
+                      isSelected ? "animate-spin-slow" : ""
+                    }`}
+                    style={{
+                      background: isSelected
+                        ? `conic-gradient(white 0deg 180deg, black 180deg 360deg)`
+                        : "transparent",
+                      padding: isSelected ? "2px" : "0px",
+                      border: isSelected ? "none" : "1px solid black",
+                    }}
+                  >
+                    <span
+                      className="w-full h-full rounded-full"
+                      style={{ backgroundColor: color }}
+                    ></span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
-<style jsx>{`
-  @keyframes spin-slow {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-  .animate-spin-slow {
-    animation: spin-slow 2s linear infinite;
-  }
-`}</style>
-
-<style jsx>{`
-  @keyframes spin-slow {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-  .animate-spin-slow {
-    animation: spin-slow 2s linear infinite;
-  }
-`}</style>
-
-
-
-
-
+          {/* أنيميشن اختيار اللون */}
+          <style jsx>{`
+            @keyframes spin-slow {
+              from {
+                transform: rotate(0deg);
+              }
+              to {
+                transform: rotate(360deg);
+              }
+            }
+            .animate-spin-slow {
+              animation: spin-slow 2s linear infinite;
+            }
+          `}</style>
 
           {/* المقاسات */}
           <div className="flex my-3">
@@ -172,14 +156,12 @@ export default function ProductDetail() {
             Add to Cart
           </button>
 
-          {/* مكان الرسالة ثابت */}
+          {/* رسالة النجاح أو الخطأ */}
           <div className="h-6 flex items-center">
             {message.text && (
               <p
                 className={`font-medium ${
-                  message.type === "error"
-                    ? "text-red-500"
-                    : "text-green-600"
+                  message.type === "error" ? "text-red-500" : "text-green-600"
                 }`}
               >
                 {message.text}
@@ -187,8 +169,9 @@ export default function ProductDetail() {
             )}
           </div>
 
+          {/* وصف مختصر */}
           <div className="mt-auto text-gray-500">
-            <h3 className=" border-gray-200 mb-5">Description</h3>
+            <h3 className="border-gray-200 mb-5">Description</h3>
             <ul className="list-disc list-inside">
               <li>Fast delivery and shipping</li>
               <li>Secure online payment</li>
@@ -199,7 +182,9 @@ export default function ProductDetail() {
 
       {/* منتجات مشابهة */}
       <div className="w-80% mx-auto text-center bg-white">
-        <h4 className="text-2xl font-bold my-3 mx-auto bg-white bgg">You may also like</h4>
+        <h4 className="text-2xl font-bold my-3 mx-auto bg-white bgg">
+          You may also like
+        </h4>
         <Store />
       </div>
     </>

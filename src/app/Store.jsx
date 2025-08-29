@@ -4,21 +4,21 @@ import products from "../data/product";
 import Link from "next/link";
 import { useMyContext } from "../context/CartContext";
 import Image from "next/image";
-import { FaFilter } from "react-icons/fa6";
-import { FaFilterCircleXmark } from "react-icons/fa6";
+import { FaFilter, FaFilterCircleXmark } from "react-icons/fa6";
+
 export default function StorePage() {
   const { addToCart } = useMyContext();
   const [hoveredId, setHoveredId] = useState(null);
 
-  // فلاتر
-  const [typeFilter, setTypeFilter] = useState(""); // dress or casual
+  // 🧾 الفلاتر
+  const [typeFilter, setTypeFilter] = useState(""); // dress | casual
   const [colorFilter, setColorFilter] = useState("");
   const [sizeFilter, setSizeFilter] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-  const [showFilters, setShowFilters] = useState(false); // للتحكم في ظهور الفلاتر
+  const [showFilters, setShowFilters] = useState(false); // تحكم إظهار/إخفاء الفلاتر
 
-  // تصفية المنتجات
+  // 🔍 تطبيق الفلاتر على المنتجات
   const filteredProducts = products.filter((product) => {
     return (
       (!typeFilter || product.type === typeFilter) &&
@@ -31,49 +31,57 @@ export default function StorePage() {
 
   return (
     <>
-      {/* أزرار الفلترة */}
+      {/* 🛠️ أزرار الفلترة الأساسية */}
       <div className="flex flex-wrap gap-2 p-4 bg-white shadow rounded mb-4">
-        {/* النوع */}
+        
+        {/* Dress */}
         <button
-          className={`px-8 py-2 rounded ${typeFilter === "dress" ? "bg text-white" : "bg-gray-200"}`}
+          className={`px-8 py-2 rounded ${
+            typeFilter === "dress" ? "bg text-white" : "bg-gray-200"
+          }`}
           onClick={() => setTypeFilter(typeFilter === "dress" ? "" : "dress")}
         >
           Dress
         </button>
+
+        {/* Casual */}
         <button
-          className={`px-8 py-2 rounded ${typeFilter === "casual" ? "bg text-white" : "bg-gray-200"}`}
+          className={`px-8 py-2 rounded ${
+            typeFilter === "casual" ? "bg text-white" : "bg-gray-200"
+          }`}
           onClick={() => setTypeFilter(typeFilter === "casual" ? "" : "casual")}
         >
           Casual
         </button>
-{/* {all button} */}
-<button
-  onClick={() => {
-    setTypeFilter("");
-    setColorFilter("");
-    setSizeFilter("");
-    setMinPrice("");
-    setMaxPrice("");
-  }}
-  className={`px-4 py-2 rounded ${
-    !typeFilter && !colorFilter && !sizeFilter && !minPrice && !maxPrice
-      ? "bg text-white"
-      : "bg-gray-200 hover:bg-gray-300"
-  }`}
->
-  All
-</button>
 
-        {/* زرار اظهار الفلاتر */}
+        {/* All Products */}
+        <button
+          onClick={() => {
+            setTypeFilter("");
+            setColorFilter("");
+            setSizeFilter("");
+            setMinPrice("");
+            setMaxPrice("");
+          }}
+          className={`px-4 py-2 rounded ${
+            !typeFilter && !colorFilter && !sizeFilter && !minPrice && !maxPrice
+              ? "bg text-white"
+              : "bg-gray-200 hover:bg-gray-300"
+          }`}
+        >
+          All
+        </button>
+
+        {/* زرار إظهار/إخفاء الفلاتر الإضافية */}
         <button
           className="px-4 py-2 bg-gray-500 text-white rounded ml-auto"
           onClick={() => setShowFilters(!showFilters)}
         >
-          {showFilters ?  <FaFilterCircleXmark />: <FaFilter />  }
+          {showFilters ? <FaFilterCircleXmark /> : <FaFilter />}
         </button>
       </div>
 
-      {/* الفلاتر الإضافية */}
+      {/* 🧰 الفلاتر الإضافية */}
       {showFilters && (
         <div className="flex flex-wrap gap-4 p-4 bg-gray-100 rounded mb-4">
           {/* اللون */}
@@ -102,7 +110,7 @@ export default function StorePage() {
             <option value="XL">XL</option>
           </select>
 
-          {/* السعر (من/إلى) */}
+          {/* السعر (من - إلى) */}
           <div className="flex items-center gap-2">
             <input
               type="number"
@@ -123,8 +131,8 @@ export default function StorePage() {
         </div>
       )}
 
-      {/* عرض المنتجات */}
-      <div className="p-2 grid gap-12 grid-cols-1 sm:grid-cols-3 md:grid-cols-4 ">
+      {/* 🛍️ عرض المنتجات */}
+      <div className="p-2 grid gap-12 grid-cols-1 sm:grid-cols-3 md:grid-cols-4">
         {filteredProducts.map((product) => (
           <Link href={`/product/${product.id}`} key={product.id}>
             <div
@@ -132,6 +140,7 @@ export default function StorePage() {
               onMouseEnter={() => setHoveredId(product.id)}
               onMouseLeave={() => setHoveredId(null)}
             >
+              {/* الصورة (بتتغير عند الهوفر) */}
               <Image
                 src={
                   hoveredId === product.id
@@ -143,23 +152,32 @@ export default function StorePage() {
                 width={300}
                 height={800}
               />
+
+              {/* التفاصيل */}
               <div className="flex flex-col text-start">
                 <div className="flex flex-row justify-between">
+                  {/* العنوان (محدود بعدد كلمات) */}
                   <h2 className="text-sm font-semibold p-2 w-70">
                     {product.name.split(" ").length > 6
                       ? product.name.split(" ").slice(0, 6).join(" ") + "..."
                       : product.name}
                   </h2>
+
+                  {/* ألوان المنتج (بحد أقصى 3 ألوان) */}
                   <div className="flex flex-col">
-                    {product.colors ?.length>1 ?  product.colors?.slice(0, 3).map((color) => (
-                      <div
-                        key={color}
-                        className="w-4 h-4 border rounded-full m-1"
-                        style={{ backgroundColor: color }} 
-                      />
-                    )) : null}
+                    {product.colors?.length > 1
+                      ? product.colors.slice(0, 3).map((color) => (
+                          <div
+                            key={color}
+                            className="w-4 h-4 border rounded-full m-1"
+                            style={{ backgroundColor: color }}
+                          />
+                        ))
+                      : null}
                   </div>
                 </div>
+
+                {/* السعر */}
                 <div className="flex flex-row justify-between">
                   {product.newPrice ? (
                     <>
