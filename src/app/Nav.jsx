@@ -1,8 +1,7 @@
 "use client";
 import React from 'react'
-import Image from 'next/image'
 import logo from '../../public/white.png'
-import bg from '../../public/bg.png'
+import Image from 'next/image'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCartShopping } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
@@ -41,15 +40,7 @@ export default function Nav() {
       </div>
 
       {/* الصورة بعرض الشاشة تحت الـ Nav */}
-<div className="relative w-full h-svh">
-  <Image 
-    src={bg} 
-    alt="background" 
-    fill 
-    className="object-cover" 
-    priority
-  />
-</div>
+
     </>
   )
 }
