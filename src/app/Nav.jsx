@@ -17,7 +17,7 @@ export default function Nav() {
     <>
       <div className="sticky top-0 z-50">
         <div className="bg h-16 flex items-center justify-between text-2xl font-bold text-gray-800 border-b-2 border-gray-400">
-          <Link href="/"><Image src={logo} width={100} height={100} className="mr-8" alt="logo" /> </Link>
+          <Link href="/"><Image src={logo} width={100} height={100} className="ml-8" alt="logo" /> </Link>
 
           <div className="flex items-center gap-2 lg:gap-4 mr-4 lg:mr-9">
 
