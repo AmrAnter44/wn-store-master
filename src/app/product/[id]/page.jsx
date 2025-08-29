@@ -133,20 +133,28 @@ export default function ProductDetail() {
             }
           `}</style>
 
-          {/* المقاسات */}
-          <div className="flex my-3">
-            {product.sizes?.map((size) => (
-              <button
-                key={size}
-                onClick={() => setSelectedSize(size)}
-                className={`font-bold text-gray-800 rounded-full border-2 m-1 text-sm w-8 h-8 flex items-center justify-center ${
-                  selectedSize === size ? "border-black" : "border-gray-300"
-                }`}
-              >
-                {size}
-              </button>
-            ))}
-          </div>
+{/* المقاسات */}
+<div className="flex my-3">
+  {["S", "M", "L", "XL"].map((size) => {
+    const isAvailable = product.sizes?.includes(size);
+    const isSelected = selectedSize === size;
+
+    return (
+      <button
+        key={size}
+        onClick={() => isAvailable && setSelectedSize(size)}
+        disabled={!isAvailable}
+        className={`font-bold text-gray-800 rounded-full border-2 m-1 text-sm w-10 h-10 flex items-center justify-center
+          ${isSelected ? "border-black" : "border-gray-300"}
+          ${!isAvailable ? "opacity-50 cursor-not-allowed" : ""}
+        `}
+      >
+        {size}
+      </button>
+    );
+  })}
+</div>
+
 
           {/* زر الإضافة للسلة */}
           <button

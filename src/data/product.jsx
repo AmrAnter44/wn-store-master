@@ -10,7 +10,7 @@ const products = [
     ],
     quantity: 0,
     soldOut: false,
-    sizes: ["M", "L", "XL"],
+    sizes: ["M","XL"],
     colors: ["white", "black"],
     type: "dress",
   },
