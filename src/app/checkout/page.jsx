@@ -76,7 +76,7 @@ export default function Page() {
     // الرسالة النهائية اللي هتتبعت
     // ----------------------------
     const message =
-      `New Order From WN Store:\n\n` +
+      `WN Store:\n\n` +
       `Name: ${name}\n` +
       `Address: ${address}\n` +
       `Phone: ${phone}\n\n` +
