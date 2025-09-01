@@ -1,4 +1,6 @@
 const products = [
+
+
   {
     id: 1,
     name: "Hand-embroidered two-piece suit",
@@ -162,7 +164,7 @@ const products = [
         {
     id: 11,
     name: "Elegant dress with a prominent pattern and a luxurious cut at the waist",
-    price: 5800,
+    price: 1400,
     description: "..",
     picture: [
       "/casual/Elegant dress with a prominent pattern and a luxurious cut at the waist.jpg",
@@ -173,14 +175,15 @@ const products = [
     ],
     quantity: 0,
     soldOut: false,
-    sizes: ["M", "L", "XL"],
+    sizes: ["M", "L"],
     colors: [""],
     type: "casual",
   },
         {
     id: 12,
     name: "Elegant dress with rose embroidery and shoulder ties",
-    price: 5800,
+    price: 1699,
+    newPrice: 1199,
     description: "..",
     picture: [
       "/casual/Elegant dress with rose embroidery and shoulder ties.jpg",
@@ -192,7 +195,7 @@ const products = [
     ],
     quantity: 0,
     soldOut: false,
-    sizes: ["M", "L", "XL"],
+    sizes: ["M", "L"],
     colors: ["cyan", "pink" ],
     type: "casual",
   },
@@ -216,7 +219,7 @@ const products = [
         {
     id: 14,
     name: "Elegant floral dress",
-    price: 5800,
+    price: 1100,
     description: "..",
     picture: [
       "/casual/Elegant floral dress.jpg",
@@ -226,7 +229,7 @@ const products = [
     ],
     quantity: 0,
     soldOut: false,
-    sizes: ["M", "L", "XL"],
+    sizes: ["M", "L",],
     colors: [""],
     type: "casual",
   },
@@ -240,6 +243,7 @@ const products = [
       "/casual/Elegant long and luxurious dress with lace fabric embroidered with roses1.jpg",
       "/casual/Elegant long and luxurious dress with lace fabric embroidered with roses2.jpg",
       "/casual/Elegant long and luxurious dress with lace fabric embroidered with roses3.jpg",
+
 
     ],
     quantity: 0,
@@ -353,7 +357,8 @@ const products = [
           {
     id: 21,
     name: "Miu Miu casual set",
-    price: 5800,
+    price: 5399,
+    newPrice: 3399,
     description: "..",
     picture: [
       "/casual/Miu Miu casual set.jpg",
@@ -418,7 +423,8 @@ const products = [
           {
     id: 24,
     name: "Short luxury dress with a bow on the chest",
-    price: 5800,
+    price: 6399,
+    newPrice: 4399,
     description: "..",
     picture: [
       "/casual/Short luxury dress with a bow on the chest.jpg",
