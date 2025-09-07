@@ -4,7 +4,7 @@ const products = [
   {
     id: 1,
     name: "Hand-embroidered two-piece suit",
-    price: 1500,
+    price: 15800,
     description: "Comfortable running shoes",
     picture: [
       "/dress/Hand-embroidered two-piece suit-white.jpg",
@@ -12,7 +12,7 @@ const products = [
     ],
     quantity: 0,
     soldOut: false,
-    sizes: ["M","XL"],
+    sizes: ["L"],
     colors: ["white", "black"],
     type: "dress",
   },
@@ -65,7 +65,7 @@ const products = [
   {
     id: 5,
     name: "Elegant, short, modern dress made of extra lycra",
-    price: 1800,
+    price: 6999,
     description: "..",
     picture: [
       "/dress/Elegant, short, modern dress made of extra lycra-black.png",
@@ -74,7 +74,7 @@ const products = [
     ],
     quantity: 0,
     soldOut: false,
-    sizes: ["M", "L", "XL"],
+    sizes: ["M", "L"],
     colors: ["black", "white", "orange"],
     type: "dress",
   },
@@ -99,8 +99,8 @@ const products = [
       {
     id: 7,
     name: "Elegant Dior dress with pleats at the bottom",
-    price: 9800,
-   newPrice: 8200,
+    price: 2200,
+   newPrice: 1200,
     description: "..",
     picture: [
       "/casual/Elegant Dior dress with pleats at the bottom.jpg",
@@ -115,7 +115,7 @@ const products = [
       {
     id: 8,
     name: "Modern blouse from Gucci",
-    price: 5800,
+    price: 600,
     description: "..",
     picture: [
       "/casual/Modern blouse from Gucci.jpg",
@@ -124,7 +124,7 @@ const products = [
     ],
     quantity: 0,
     soldOut: false,
-    sizes: ["M", "L", "XL"],
+    sizes: ["M", "L"],
     colors: ["red","black","white"],
     type: "casual",
   },
@@ -146,7 +146,7 @@ const products = [
         {
     id: 10,
     name: "Elegant blouse with lace rose embroidery on the shoulders",
-    price: 5800,
+    price: 600,
     description: "..",
     picture: [
       "/casual/Elegant blouse with lace rose embroidery on the shoulders.jpg",
@@ -157,7 +157,7 @@ const products = [
     ],
     quantity: 0,
     soldOut: false,
-    sizes: ["M", "L", "XL"],
+    sizes: ["L"],
     colors: [""],
     type: "casual",
   },
@@ -202,7 +202,7 @@ const products = [
         {
     id: 13,
     name: "Elegant dress with prominent print",
-    price: 5800,
+    price: 1400,
     description: "..",
     picture: [
       "/casual/Elegant dress with prominent print.jpg",
@@ -212,7 +212,7 @@ const products = [
     ],
     quantity: 0,
     soldOut: false,
-    sizes: ["M", "L", "XL"],
+    sizes: ["M", "L"],
     colors: ["pink" , "cyan"],
     type: "casual",
   },
@@ -274,7 +274,7 @@ const products = [
         {
     id: 17,
     name: "three dimensional flowers waist small a pendulum ",
-    price: 5800,
+    price: 1200,
     description: "..",
     picture: [
       "/casual/three dimensional flowers waist small a pendulum .jpg",
@@ -288,14 +288,14 @@ const products = [
     ],
     quantity: 0,
     soldOut: false,
-    sizes: ["M", "L", "XL"],
+    sizes: ["M", "L"],
     colors: ["darkred" , "teal" ,"wheat"],
     type: "casual",
   },
         {
     id: 18,
     name: "Elegant long summer dress with a tie at the back",
-    price: 5800,
+    price: 1200,
     description: "..",
     picture: [
       "/casual/Elegant long summer dress with a tie at the back.jpg",
@@ -309,7 +309,7 @@ const products = [
     ],
     quantity: 0,
     soldOut: false,
-    sizes: ["M", "L", "XL"],
+    sizes: ["M", "L"],
     colors: [""],
     type: "casual",
   },
@@ -337,7 +337,7 @@ const products = [
           {
     id: 20,
     name: "Luxury rose-shaped blouse",
-    price: 5800,
+    price: 600,
     description: "..",
     picture: [
       "/casual/Luxury rose-shaped blouse.jpg",
@@ -345,12 +345,10 @@ const products = [
       "/casual/Luxury rose-shaped blouse2.jpg",
       "/casual/Luxury rose-shaped blouse3.jpg",
 
-
-
     ],
     quantity: 0,
     soldOut: false,
-    sizes: ["M", "L", "XL"],
+    sizes: ["M", "L"],
     colors: ["red" , "gray"],
     type: "casual",
   },
@@ -370,7 +368,7 @@ const products = [
     ],
     quantity: 0,
     soldOut: false,
-    sizes: ["M", "L", "XL"],
+    sizes: ["L"],
     colors: [""],
     type: "casual",
   },
@@ -400,7 +398,7 @@ const products = [
           {
     id: 23,
     name: "Short jumpsuit with a unique and modern cut",
-    price: 5800,
+    price: 1200,
     description: "..",
     picture: [
       "/casual/Short jumpsuit with a unique and modern cut.jpg",
@@ -416,7 +414,7 @@ const products = [
     ],
     quantity: 0,
     soldOut: false,
-    sizes: ["M", "L", "XL"],
+    sizes: ["M", "L",],
     colors: [""],
     type: "casual",
   },
