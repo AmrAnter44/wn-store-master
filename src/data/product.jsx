@@ -5,7 +5,7 @@ const products = [
     id: 1,
     name: "Hand-embroidered two-piece suit",
     price: 15800,
-    description: "Comfortable running shoes",
+    description: ".",
     picture: [
       "/dress/Hand-embroidered two-piece suit-white.jpg",
       "/dress/Hand-embroidered two-piece suit-black.jpg"
@@ -456,6 +456,7 @@ const products = [
     colors: [""],
     type: "casual",
   },
+
 ];
 
 export default products;

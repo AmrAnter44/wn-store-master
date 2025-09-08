@@ -57,6 +57,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { MyContextProvider } from "../context/CartContext";
 import Nav from "./Nav";
+import NavT from "./NavT";
 import { Poppins } from 'next/font/google';
 import Footer from "./Footer";
 
@@ -91,7 +92,7 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
         <MyContextProvider>
-          <Nav />
+          <NavT />
 
           {/* Main content expands to push footer down */}
           <main className="flex-grow">

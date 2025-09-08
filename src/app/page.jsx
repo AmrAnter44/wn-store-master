@@ -1,10 +1,13 @@
 
-import Img from "./Img";
+import Nav from "./Nav";
+
+
 import Store from "./Store";
+
 export default function Home() {
   return <>
 
-  <Img></Img>
+
   <Store></Store>
   
   </>

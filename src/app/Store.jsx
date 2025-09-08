@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useMyContext } from "../context/CartContext";
 import Image from "next/image";
 import { FaFilter, FaFilterCircleXmark } from "react-icons/fa6";
-
 export default function StorePage() {
   const { addToCart } = useMyContext();
   const [hoveredId, setHoveredId] = useState(null);
@@ -31,6 +30,7 @@ export default function StorePage() {
 
   return (
     <>
+
       {/* 🛠️ أزرار الفلترة الأساسية */}
       <div className="flex flex-wrap gap-2 p-4 bg-white shadow rounded mb-4">
         
