@@ -1,6 +1,6 @@
 "use client";
 import React from 'react'
-import logo from '../../public/whitelogo.png'
+import logo from '../../public/darklogo.png'
 import Image from 'next/image'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCartShopping } from "@fortawesome/free-solid-svg-icons";
@@ -14,8 +14,9 @@ export default function NavT() {
 
   return (
     <>
-      <div className="sticky top-0 z-50">
-        <div className="bg h-16 flex items-center justify-between text-2xl font-bold text-gray-800 border-b-2 border-gray-400">
+    
+      <div className="sticky top-0 nava border-2 border-[#b09dc1]">
+        <div className=" h-16 flex items-center justify-between text-2xl font-bold text-gray-800  ">
           <Link href="/"><Image src={logo} width={100} height={100} className="ml-8" alt="logo" /> </Link>
 
           <div className="flex items-center gap-2 lg:gap-4 mr-4 lg:mr-9">
@@ -24,7 +25,7 @@ export default function NavT() {
                           <Link href="/cart" className="relative m-2">
               <FontAwesomeIcon className="fa-solid fa-cart-shopping text-white w-8" icon={faCartShopping} />
               {cartCount > 0 && (
-                <span className="absolute -top-3 left-4 bg-white text-purple-500 text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                <span className="absolute -top-3 left-4 bg-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
                   {cartCount}
                 </span>
               )}
@@ -39,7 +40,7 @@ export default function NavT() {
         </div>
       </div>
 
-      {/* الصورة بعرض الشاشة تحت الـ Nav */}
+
 
     </>
   )

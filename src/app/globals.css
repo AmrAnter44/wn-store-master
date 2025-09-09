@@ -32,6 +32,11 @@ body {
   color: #b09dc1;
 }
 
+.nava {
+background: #B09DC1;
+background: linear-gradient(270deg, rgba(176, 157, 193, 1) 32%, rgba(255, 255, 255, 0.84) 71%);
+}
+
 .swiper-button-next,
 .swiper-button-prev {
   color: black;

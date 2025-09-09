@@ -5,6 +5,7 @@ import { faCartShopping } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import Link from "next/link";
  import { useMyContext } from "../context/CartContext";
+import Image from "next/image"
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -52,9 +53,9 @@ export default function Navbar() {
         </div>
       </nav>
          <section
-        className={`w-full min-h-[320px] bg-[url('/bg.png')] bg-fixed bg-cover bg-center md:bg-top flex items-center md:item-start justify-center md:justify-bottom`}
+        className={`w-full min-h-screen bg-[url('/bg.png')] bg-fixed bg-cover bg-center  flex items-center md:item-start justify-center md:justify-bottom`}
       >
-        <div className="w-full min-h-[320px] bg-black/60 flex flex-col items-center justify-center text-center p-4">
+        <div className="w-full min-h-screen bg-black/60 flex flex-col items-start justify-start text-center p-4">
           <h2 className="font-bold text-5xl md:text-6xl text-white">
             <span className="text-blue-600"></span> 
           </h2>
