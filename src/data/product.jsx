@@ -430,11 +430,6 @@ const products = [
       "/casual/Short luxury dress with a bow on the chest2.jpg",
       "/casual/Short luxury dress with a bow on the chest3.jpg",
       "/casual/Short luxury dress with a bow on the chest4.jpg",
-
-
-
-
-
     ],
     quantity: 0,
     soldOut: false,
@@ -457,6 +452,176 @@ const products = [
     type: "casual",
   },
 
+  
+
+  // ... لحد id: 28
+
+  {
+    id: 29,
+    name: "Three-piece swimsuit",
+    price: 1400,
+    description: "Three-piece swimsuit in multiple colors.",
+    picture: [
+      "/casual/Three-piece swimsui.jpg",
+      "/casual/Three-piece swimsui1.jpg",
+      "/casual/Three-piece swimsui2.jpg",
+      "/casual/Three-piece swimsui3.jpg",
+      "/casual/Three-piece swimsui4.jpg"
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["L"],
+    colors: ["darkred" , "darkviolet"],
+    type: "casual",
+  },
+  {
+    id: 30,
+    name: "Long dress Slim straps Open at the side",
+    price: 1200,
+    description: "Long dress with slim straps and side opening.",
+    picture: [
+      "/casual/Long dress, Slim straps, Open at the side.jpg",
+      "/casual/Long dress, Slim straps, Open at the side1.jpg",
+      "/casual/Long dress, Slim straps, Open at the side2.jpg",
+      "/casual/Long dress, Slim straps, Open at the side3.jpg",
+      "/casual/Long dress, Slim straps, Open at the side4.jpg",
+      "/casual/Long dress, Slim straps, Open at the side5.jpg",
+      "/casual/Long dress, Slim straps, Open at the side6.jpg",
+      "/casual/Long dress, Slim straps, Open at the side7.jpg",
+      "/casual/Long dress, Slim straps, Open at the side8.jpg"
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M", "L"],
+    colors: ["baby blue", "red", "yellow", "lavender"],
+    type: "casual",
+  },
+  {
+    id: 31,
+    name: "Short Jumpsuit",
+    price: 700,
+    description: "Casual short jumpsuit.",
+    picture: [
+      "/casual/Short Jumpsuit.jpg",
+      "/casual/Short Jumpsuit1.jpg",
+      "/casual/Short Jumpsuit2.jpg",
+      "/casual/Short Jumpsuit3.jpg",
+      "/casual/Short Jumpsuit4.jpg"
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M"],
+    colors: [""],
+    type: "casual",
+  },
+  {
+    id: 32,
+    name: "Short Jumpsuit Polygon",
+    price: 700,
+    description: "Short jumpsuit polygon style.",
+    picture: [
+      "/casual/Short Jumpsuit Polygon.jpg",
+      "/casual/Short Jumpsuit Polygon1.jpg"
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["S", "L"],
+    colors: [""],
+    type: "casual",
+  },
+
+  {
+    id: 34,
+    name: "Long Suit skirt",
+    price: 1500,
+    description: "Formal long suit skirt.",
+    picture: [
+      "/casual/Long Suit skirt.jpg",
+      "/casual/Long Suit skirt1.jpg",
+      "/casual/Long Suit skirt2.jpg",
+      "/casual/Long Suit skirt3.jpg",
+      "/casual/Long Suit skirt4.jpg"
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M"],
+    colors: [""],
+    type: "casual",
+  },
+  {
+    id: 35,
+    name: "Long dress with a round slit in the back",
+    price: 800,
+    description: "Long dress with stylish back slit.",
+    picture: [
+      "/casual/Long dress with a round slit in the back.jpg",
+      "/casual/Long dress with a round slit in the back1.jpg",
+      "/casual/Long dress with a round slit in the back2.jpg",
+      "/casual/Long dress with a round slit in the back3.jpg",
+      "/casual/Long dress with a round slit in the back4.jpg",
+      "/casual/Long dress with a round slit in the back5.jpg",
+      "/casual/Long dress with a round slit in the back6.jpg",
+      "/casual/Long dress with a round slit in the back7.jpg"
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: [""],
+    colors: [""],
+    type: "casual",
+  },
+  {
+    id: 36,
+    name: "Long dress with Lace",
+    price: 1200,
+    description: "Long dress with lace details.",
+    picture: [
+      "/casual/Long dress with Lace.jpg",
+      "/casual/Long dress with Lace1.jpg",
+      "/casual/Long dress with Lace2.jpg",
+      "/casual/Long dress with Lace3.jpg",
+      "/casual/Long dress with Lace4.jpg",
+      "/casual/Long dress with Lace5.jpg"
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["L"],
+    colors: ["white"],
+    type: "casual",
+  },
+  {
+    id: 37,
+    name: "Suit long skirt",
+    price: 1600,
+    description: "Suit with long skirt, multiple colors.",
+    picture: [
+      "/casual/Suit long skirt blue and white.jpg",
+      "/casual/Suit long skirt blue and white1.jpg",
+      "/casual/Suit long skirt blue and white2.jpg"
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: ["M"],
+    colors: [""],
+    type: "casual",
+  },
+  {
+    id: 38,
+    name: "Long Jumpsuit",
+    price: 1800,
+    description: "Elegant long jumpsuit.",
+    picture: [
+      "/casual/Long Jumpsuit.jpg"
+    ],
+    quantity: 0,
+    soldOut: false,
+    sizes: [""],
+    colors: ["baby blue"],
+    type: "casual",
+  },
 ];
+
+
+
+
 
 export default products;
