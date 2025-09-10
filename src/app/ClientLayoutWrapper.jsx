@@ -1,7 +1,6 @@
 "use client";
-
 import { usePathname } from "next/navigation";
-import NavT from "./NavT";
+import NavT from "../../src/app/Navt";
 
 export default function ClientLayoutWrapper({ children }) {
   const pathname = usePathname();
