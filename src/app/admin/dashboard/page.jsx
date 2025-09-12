@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import AddProduct from "../add/page";       // سيكشن الإضافة
 import RemoveProduct from "../remove/page"; // سيكشن الحذف
-import { supabase } from '@/lib/supabaseClient'
+
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("add"); // للتحكم بالسيكشن النشط
