@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { supabase } from "@/lib/supabaseClient"
+import { supabase } from "@/lib/supabaseClient";
+
 import { FaFilter, FaFilterCircleXmark } from "react-icons/fa6";
 import { useMyContext } from "../context/CartContext";
 

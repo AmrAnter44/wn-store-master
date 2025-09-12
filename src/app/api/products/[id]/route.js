@@ -1,16 +1,23 @@
-import { supabaseServer } from '@/lib/supabaseClient'
+import { NextResponse } from "next/server";
+import { supabaseServer } from "@/lib/supabaseClient";
 
 export async function GET(req, { params }) {
-  const { id } = params
-  const { data, error } = await supabaseServer
-    .from('products')
-    .select('*')
-    .eq('id', id)
-    .single()
+  const { id } = params;
 
-  if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 })
+  if (!id) {
+    return NextResponse.json({ error: "Product ID is required" }, { status: 400 });
   }
 
-  return new Response(JSON.stringify(data), { status: 200 })
+  // استخدم supabaseServer عشان ده backend
+  const { data, error } = await supabaseServer
+    .from("products")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json(data);
 }
