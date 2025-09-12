@@ -2,7 +2,8 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { supabase } from "../../lib/supabaseClient"
+import { supabase } from '@/lib/supabaseClient'
+
 
 export default function RelatedProducts({ currentProduct }) {
   const [related, setRelated] = useState([])
