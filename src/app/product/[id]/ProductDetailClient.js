@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { supabase } from "../../../../lib/supabaseClient"
+import { supabase } from "@/lib/supabaseClient"
 import Image from "next/image"
 import RelatedProducts from "../../RelatedProducts"
 import { useMyContext } from "../../../context/CartContext"

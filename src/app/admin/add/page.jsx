@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { supabase } from "../../../../lib/supabaseClient.js"
+import { supabase } from "@/lib/supabaseClient"
+
 
 export default function AddProduct() {
   const [name, setName] = useState("")
