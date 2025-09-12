@@ -31,68 +31,70 @@ export default function Cart() {
         <>
           {/* عرض كل المنتجات في الكارت */}
           <ul className="space-y-4">
-            {cart.map((item, index) => (
-              <li
-                key={`${item.id}-${item.selectedColor}-${item.selectedSize}`}
-                className="flex justify-between items-center"
-              >
-                {/* صورة المنتج */}
-                <div>
+            {cart.map((item, index) => {
+              // احسب لون الصورة الصحيحة
+              const colorIndex = item.colors?.indexOf(item.selectedColor) ?? 0;
+              const imgSrc =
+                item.pictures?.[colorIndex] || item.pictures?.[0] || "/fallback.png";
+
+              return (
+                <li
+                  key={`${item.id}-${item.selectedColor}-${item.selectedSize}`}
+                  className="flex justify-between items-center"
+                >
+                  {/* صورة المنتج */}
                   <div>
-                    {(() => {
-                      const colorIndex = item.colors.indexOf(item.selectedColor);
-                      return (
-                        <Image
-                          src={item.picture[colorIndex >= 0 ? colorIndex : 0]} // fallback لأول صورة لو مفيش لون محدد
-                          alt={`Product image ${index}`}
-                          className="w-50 object-cover mb-4 rounded"
-                          width={100}
-                          height={400}
-                        />
-                      );
-                    })()}
+                    <div>
+                      <Image
+                        src={imgSrc} // استخدم الصورة الصحيحة أو fallback
+                        alt={`Product image ${index}`}
+                        className="w-50 object-cover mb-4 rounded"
+                        width={100}
+                        height={400}
+                      />
+                    </div>
                   </div>
-                </div>
 
-                {/* تفاصيل المنتج */}
-                <div className="w-40">
-                  <p className="p-2">
-                    Price:{" "}
-                    {item.newPrice ? (
-                      <span>{item.newPrice}.LE</span>
-                    ) : (
-                      <>{item.price} .LE</>
-                    )}
-                  </p>
-
-                  <p className="p-2">Quantity: {item.quantity}</p>
-
-                  {/* عرض اللون فقط لو في أكتر من لون */}
-                  {item.colors && item.colors.length > 1 && (
+                  {/* تفاصيل المنتج */}
+                  <div className="w-40">
                     <p className="p-2">
-                      Color:{" "}
-                      <span
-                        style={{ backgroundColor: item.selectedColor }}
-                        className="inline-block w-4 h-4 rounded-full border-2"
-                      ></span>
+                      Price:{" "}
+                      {item.newPrice ? (
+                        <span>{item.newPrice}.LE</span>
+                      ) : (
+                        <>{item.price} .LE</>
+                      )}
                     </p>
-                  )}
 
-                  {/* عرض المقاس */}
-                  <p className="p-2">Size: {item.selectedSize}</p>
+                    <p className="p-2">Quantity: {item.quantity}</p>
 
-                  {/* زرار الحذف */}
-                  <button
-                    className="text-red-400 text-xl hover:text-red-500 m-5 "
-                    onClick={() =>
-                      removeFromCart(item.id, item.selectedColor, item.selectedSize)
-                    }
-                  >
-                    Remove
-                  </button>
-                </div>
-              </li>
-            ))}
+                    {/* عرض اللون فقط لو في أكتر من لون */}
+                    {item.colors && item.colors.length > 1 && (
+                      <p className="p-2">
+                        Color:{" "}
+                        <span
+                          style={{ backgroundColor: item.selectedColor }}
+                          className="inline-block w-4 h-4 rounded-full border-2"
+                        ></span>
+                      </p>
+                    )}
+
+                    {/* عرض المقاس */}
+                    <p className="p-2">Size: {item.selectedSize}</p>
+
+                    {/* زرار الحذف */}
+                    <button
+                      className="text-red-400 text-xl hover:text-red-500 m-5"
+                      onClick={() =>
+                        removeFromCart(item.id, item.selectedColor, item.selectedSize)
+                      }
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
 
           {/* الإجمالي */}

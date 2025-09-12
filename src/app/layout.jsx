@@ -1,25 +1,15 @@
-import { Geist, Geist_Mono } from "next/font/google";
+
 import "./globals.css";
 import { MyContextProvider } from "../context/CartContext";
-import { Poppins } from 'next/font/google';
+import { Outfit  } from 'next/font/google';
 import Footer from "./Footer";
 import ClientLayoutWrapper from "./ClientLayoutWrapper"; // 🔹 ملف جديد
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
 
-const poppins = Poppins({
-  weight: ['400', '700'],
-  subsets: ['latin'],
-  display: 'swap',
-});
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+
+
+const outfit = Outfit({ subsets: ["latin"], weight: ["400","500","600","700","800","900"] });
 
 export const metadata = {
   title: "Wn Store",
@@ -31,9 +21,9 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={poppins.className}>
+    <html lang="en" className={`${outfit.className}`}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
+        className={`${outfit.className} antialiased flex flex-col min-h-screen`}
       >
         <MyContextProvider>
           <ClientLayoutWrapper>
