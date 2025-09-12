@@ -1,13 +1,11 @@
-import { supabase } from "@/lib/supabaseClient"
-
-
+import { supabaseServer } from "@/lib/supabaseClient"
 
 export async function POST(req) {
   try {
     const body = await req.json()
     console.log("Body received:", body) // للتأكد من البيانات
 
-    const { data, error } = await supabase.from("products").insert([body])
+    const { data, error } = await supabaseServer.from("products").insert([body])
     if (error) {
       console.error("Insert error:", error)
       return new Response(JSON.stringify({ error: error.message }), { status: 400 })
