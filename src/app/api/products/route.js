@@ -4,8 +4,8 @@ export async function POST(req) {
   try {
     const body = await req.json()
     console.log("Body received:", body) // للتأكد من البيانات
+const { data, error } = await supabaseServer().from("products").insert([body])
 
-    const { data, error } = await supabaseServer.from("products").insert([body])
     if (error) {
       console.error("Insert error:", error)
       return new Response(JSON.stringify({ error: error.message }), { status: 400 })

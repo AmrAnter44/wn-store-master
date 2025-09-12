@@ -1,23 +1,14 @@
-import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseClient";
 
-export async function GET(req, { params }) {
-  const { id } = params;
+export async function GET(req) {
+  const { data, error } = await supabaseServer().from("products").select("*"); // ✅ call the function
+  if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  return new Response(JSON.stringify(data), { status: 200 });
+}
 
-  if (!id) {
-    return NextResponse.json({ error: "Product ID is required" }, { status: 400 });
-  }
-
-  // استخدم supabaseServer عشان ده backend
-  const { data, error } = await supabaseServer
-    .from("products")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json(data);
+export async function POST(req) {
+  const body = await req.json();
+  const { data, error } = await supabaseServer().from("products").insert([body]); // ✅ call the function
+  if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400 });
+  return new Response(JSON.stringify(data), { status: 200 });
 }
