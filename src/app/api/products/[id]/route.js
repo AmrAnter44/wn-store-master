@@ -1,17 +1,23 @@
-import { supabase } from "@/lib/supabaseClient"
+import { NextResponse } from "next/server";
+import { supabaseServer } from "@/lib/supabaseClient";
 
-export async function DELETE(req, { params }) {
+export async function GET(req, { params }) {
   const { id } = params;
 
   if (!id) {
-    return new Response(JSON.stringify({ error: "Product ID is required" }), { status: 400 });
+    return NextResponse.json({ error: "Product ID is required" }, { status: 400 });
   }
 
-  const { data, error } = await supabase.from("products").delete().eq("id", id);
+  // استخدم supabaseServer عشان ده backend
+  const { data, error } = await supabaseServer
+    .from("products")
+    .select("*")
+    .eq("id", id)
+    .single();
 
   if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return new Response(JSON.stringify({ message: "Product deleted successfully", data }), { status: 200 });
+  return NextResponse.json(data);
 }
