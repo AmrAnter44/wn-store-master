@@ -84,7 +84,7 @@ export default function Page() {
       `Total: ${total} EGP\n`;
 
     // رقم واتساب صاحب المتجر
-    const yourWhatsAppNumber = "201028518754";
+    const yourWhatsAppNumber = "201211661802";
     const encodedMessage = encodeURIComponent(message);
 
     // فتح واتساب بالرسالة الجاهزة

@@ -45,7 +45,7 @@ export default function Navbar() {
                 )}
               </Link>
 
-              <Link href="https://wa.me/+201070001014" className="m-2">
+              <Link href="https://wa.me/+201211661802" className="m-2">
                 <FontAwesomeIcon className={`fa-solid fa-cart-shopping text-3xl  w-9 ${scrolled ? "bgg" : "text-white"}  shadow-2xl shadow-black`} icon={faWhatsapp} />
               </Link>
             </div>
