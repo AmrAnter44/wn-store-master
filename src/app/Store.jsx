@@ -6,12 +6,14 @@ import { supabase } from "@/lib/supabaseClient";
 
 import { FaFilter, FaFilterCircleXmark } from "react-icons/fa6";
 import { useMyContext } from "../context/CartContext";
+import Storepopup from "./product/[id]/Storepopup"; // ✅
 
 export default function StorePage() {
   const { addToCart } = useMyContext();
 
   // 🟣 State
   const [hoveredId, setHoveredId] = useState(null);
+  const [selectedProductId, setSelectedProductId] = useState(null); // ✅ Popup state
 
   // 🔍 Filters
   const [typeFilter, setTypeFilter] = useState("");
@@ -43,9 +45,6 @@ export default function StorePage() {
 
       setLoading(false);
     };
-    console.log("SUPABASE_URL:", process.env.NEXT_PUBLIC_SUPABASE_URL)
-console.log("SUPABASE_KEY:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-
 
     fetchProducts();
   }, []);
@@ -64,7 +63,6 @@ console.log("SUPABASE_KEY:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
   return (
     <>
       {loading ? (
-        // ⏳ Loading state
         <p className="text-center mt-10">Loading products...</p>
       ) : (
         <>
@@ -183,13 +181,14 @@ console.log("SUPABASE_KEY:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
           {/* 🛍 Products Grid */}
           <div className="p-2 grid gap-12 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {filteredProducts.map((product) => (
-              <Link href={`/product/${product.id}`} key={product.id}>
-                <div
-                  className="relative p-2 m-2 rounded-2xl flex flex-col justify-center items-center object-cover transition-opacity duration-700 ease-in-out opacity-100 hover:opacity-80"
-                  onMouseEnter={() => setHoveredId(product.id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                >
-                  {/* Product Image */}
+              <div
+                key={product.id}
+                className="relative p-2 m-2 rounded-2xl flex flex-col justify-center items-center transition-opacity duration-700 ease-in-out opacity-100 hover:opacity-80"
+                onMouseEnter={() => setHoveredId(product.id)}
+                onMouseLeave={() => setHoveredId(null)}
+              >
+                {/* Product Image + Info داخل لينك */}
+                <Link href={`/product/${product.id}`} className="w-full">
                   <Image
                     src={
                       hoveredId === product.id
@@ -197,35 +196,18 @@ console.log("SUPABASE_KEY:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
                         : product.pictures?.[0] || "/placeholder.png"
                     }
                     alt={product.name}
-                    className="relative rounded mx-auto object-cover"
+                    className="rounded mx-auto object-cover"
                     width={300}
                     height={400}
                   />
 
-                  {/* Color Options Preview (dots) */}
-                  <div className="absolute bottom-25 md:right-4 lg:bottom-22 right-10 lg:right-4 flex flex-col">
-                    {product.colors?.length > 1 &&
-                      product.colors.slice(0, 3).map((color, idx) => (
-                        <div
-                          key={idx}
-                          className="w-2 h-2 hover:scale-125 transition-transform duration-200"
-                          style={{ backgroundColor: color }}
-                        />
-                      ))}
-                  </div>
-
-                  {/* Product Info */}
                   <div className="flex flex-col text-start w-full p-2">
-                    {/* Name */}
-                    <div className="flex flex-row justify-between">
-                      <h2 className="text-lg font-semibold">
-                        {product.name.length > 30
-                          ? product.name.slice(0, 30) + "..."
-                          : product.name}
-                      </h2>
-                    </div>
+                    <h2 className="text-lg font-semibold">
+                      {product.name.length > 30
+                        ? product.name.slice(0, 30) + "..."
+                        : product.name}
+                    </h2>
 
-                    {/* Price */}
                     <div className="flex justify-between items-center mt-1">
                       {product.newprice ? (
                         <>
@@ -247,12 +229,38 @@ console.log("SUPABASE_KEY:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
                       )}
                     </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+
+                {/* ✅ Add to Cart button */}
+                <button
+                  onClick={() => setSelectedProductId(product.id)}
+                  className="bg text-white px-4 py-2 rounded mt-2 hover:bg-gray-800 transition"
+                >
+                  Add to Cart
+                </button>
+              </div>
             ))}
           </div>
+
+          {/* ✅ Popup for ProductDetailClient */}
+          {selectedProductId && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full relative">
+                {/* Close button */}
+                <button
+                  className="absolute top-2 right-2 text-gray-600 hover:text-black text-2xl "
+                  onClick={() => setSelectedProductId(null)}
+                >
+                  &times;
+                </button>
+
+                <Storepopup productId={selectedProductId} />
+              </div>
+            </div>
+          )}
         </>
       )}
     </>
   );
 }
+ 

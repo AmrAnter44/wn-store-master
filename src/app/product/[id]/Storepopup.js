@@ -63,19 +63,18 @@ export default function ProductDetailClient({ productId }) {
                 onClick={() => setSelectedImage(img)}
                 className="cursor-pointer mt-2"
               >
-                <Image src={img} alt={`thumb-${idx}`} width={60} height={90} />
+                <Image src={img} alt={`thumb-${idx}`} width={40} height={60} />
               </div>
             ))}
           </div>
           <div className="">
-            <Image src={selectedImage} alt="Main" width={400} height={500} />
+            <Image src={selectedImage} alt="Main" width={300} height={400} />
           </div>
         </div>
 
         {/* تفاصيل المنتج */}
         <div className="flex flex-col gap-3">
-          <h1 className="text-2xl font-bold">{product.name}</h1>
-          <p className="text-gray-700">{product.description}</p>
+          <h1 className="text-xl font-bold">{product.name}</h1>
 
           <div className="flex justify-between items-center mt-1">
             {product.newprice ? (
@@ -109,7 +108,7 @@ export default function ProductDetailClient({ productId }) {
                       product.pictures?.[idx] || product.pictures?.[0]
                     )
                   }}
-                  className={`w-6 h-6 rounded-full border-2 ${
+                  className={`w-6 h-5 rounded-full border-2 ${
                     isSelected ? "border-black" : "border-gray-300"
                   }`}
                   style={{ backgroundColor: color }}
@@ -128,7 +127,7 @@ export default function ProductDetailClient({ productId }) {
                   key={size}
                   onClick={() => isAvailable && setSelectedSize(size)}
                   disabled={!isAvailable}
-                  className={`text-sm w-8 h-8 rounded-full border-2 ${
+                  className={`text-[10px] w-6 h-6 rounded-full border-2 ${
                     isSelected ? "border-black" : "border-gray-300"
                   } ${
                     !isAvailable ? "opacity-50 cursor-not-allowed" : ""
@@ -146,7 +145,7 @@ export default function ProductDetailClient({ productId }) {
             className={`px-4 py-2 rounded transition ${
               added
                 ? "bg-green-600 text-white"
-                : "bg text-white hover:bg"
+                : "bg-black text-white hover:bg-gray-800"
             }`}
           >
             {added ? "Product Added!" : "Add to Cart"}
@@ -154,8 +153,7 @@ export default function ProductDetailClient({ productId }) {
         </div>
       </div>
 
-      {/* Related Products */}
-      <RelatedProducts currentProduct={product} />
+
     </div>
   )
 }

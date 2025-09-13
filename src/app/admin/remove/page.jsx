@@ -115,7 +115,7 @@ export default function ManageProducts() {
               <div className="flex gap-2 mt-3">
                 <button
                   onClick={() => openEditModal(prod)}
-                  className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                  className="px-3 py-1 bg text-white rounded  transition"
                 >
                   Edit
                 </button>
@@ -164,7 +164,7 @@ export default function ManageProducts() {
                   type="button"
                   onClick={() => toggleColor(color)}
                   className={`px-2 py-1 rounded border ${
-                    editColors.includes(color) ? "bg-purple-500 text-white" : "bg-white"
+                    editColors.includes(color) ? "bg text-white" : "bg-white"
                   }`}
                 >
                   {color}

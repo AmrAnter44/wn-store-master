@@ -40,7 +40,7 @@ export default function RelatedProducts({ currentProduct }) {
         {related.map((product) => (
                    <Link href={`/product/${product.id}`} key={product.id}>
                 <div
-                  className="relative p-2 m-2 h-120 rounded-2xl flex flex-col justify-center items-center object-cover transition-opacity duration-700 ease-in-out opacity-100 hover:opacity-80"
+                  className="relative p-2 m-2  rounded-2xl flex flex-col justify-center items-center object-cover transition-opacity duration-700 ease-in-out opacity-100 hover:opacity-80"
                   onMouseEnter={() => setHoveredId(product.id)}
                   onMouseLeave={() => setHoveredId(null)}
                 >

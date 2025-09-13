@@ -49,7 +49,7 @@ export default function LoginPage() {
           className="p-2 border rounded"
           required
         />
-        <button className="bg-purple-600 text-white py-2 rounded hover:bg-purple-700">
+        <button className="bg text-white py-2 rounded hover:bg-purple-700">
           Login
         </button>
         {error && <p className="text-red-500 text-center">{error}</p>}

@@ -14,7 +14,7 @@ export default function AdminPage() {
       <div className="flex gap-4 mb-6 mx-auto justify-center items-center">
         <button
           className={`px-4 py-2 rounded ${
-            activeTab === "add" ? "bg-purple-600 text-white" : "bg-gray-200"
+            activeTab === "add" ? "bg text-white" : "bg-gray-200"
           }`}
           onClick={() => setActiveTab("add")}
         >
@@ -22,7 +22,7 @@ export default function AdminPage() {
         </button>
         <button
           className={`px-4 py-2 rounded ${
-            activeTab === "remove" ? "bg-purple-600 text-white" : "bg-gray-200"
+            activeTab === "remove" ? "bg text-white" : "bg-gray-200"
           }`}
           onClick={() => setActiveTab("remove")}
         >

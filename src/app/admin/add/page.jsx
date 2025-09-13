@@ -168,7 +168,7 @@ export default function AddProduct() {
           <div className="mt-2 border rounded-md p-2 flex flex-wrap gap-2 max-h-60 overflow-y-auto">
             {colorOptions.map((color) => (
               <label key={color} className="flex items-center gap-2 cursor-pointer transition-all hover:scale-105 p-1 rounded">
-                <input type="checkbox" className="w-4 h-4 accent-purple-600" checked={colors.includes(color)} onChange={() => handleCheckboxChange(color, colors, setColors)} />
+                <input type="checkbox" className="w-4 h-4 accent-[#b09dc1da]" checked={colors.includes(color)} onChange={() => handleCheckboxChange(color, colors, setColors)} />
                 <span className="w-5 h-5 rounded border" style={{ backgroundColor: color }}></span>
                 <span className="capitalize">{color}</span>
               </label>
@@ -207,7 +207,7 @@ export default function AddProduct() {
         </div>
       )}
 
-      <button type="submit" disabled={loading} className="mt-3 bg-purple-600 text-white py-2 rounded-md hover:bg-purple-700 transition">
+      <button type="submit" disabled={loading} className="mt-3 bg text-white py-2 rounded-md  transition">
         {loading ? "Adding..." : "Add Product"}
       </button>
 
