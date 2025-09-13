@@ -72,7 +72,7 @@ export default function StorePage() {
             <button
               className={`px-8 py-2 rounded ${
                 typeFilter === "dress"
-                  ? "bg-purple-500 text-white"
+                  ? "bg text-white"
                   : "bg-gray-200"
               }`}
               onClick={() =>
@@ -86,7 +86,7 @@ export default function StorePage() {
             <button
               className={`px-8 py-2 rounded ${
                 typeFilter === "casual"
-                  ? "bg-purple-500 text-white"
+                  ? "bg text-white"
                   : "bg-gray-200"
               }`}
               onClick={() =>
@@ -111,7 +111,7 @@ export default function StorePage() {
                 !sizeFilter &&
                 !minPrice &&
                 !maxPrice
-                  ? "bg-purple-500 text-white"
+                  ? "bg text-white"
                   : "bg-gray-200 hover:bg-gray-300"
               }`}
             >
