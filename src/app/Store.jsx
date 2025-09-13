@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 
 import { FaFilter, FaFilterCircleXmark } from "react-icons/fa6";
 import { useMyContext } from "../context/CartContext";
-
+import { FaSpinner } from "react-icons/fa";
 
 export default function StorePage() {
   const { addToCart } = useMyContext();
@@ -63,7 +63,10 @@ export default function StorePage() {
   return (
     <>
       {loading ? (
-        <p className="text-center mt-10">Loading products...</p>
+<p className="flex justify-center items-center mt-10 bgg">
+  <FaSpinner className="animate-spin text-3xl mr-2" />
+
+</p>
       ) : (
         <>
           {/* 🔘 Quick Type Filters */}
@@ -240,22 +243,7 @@ export default function StorePage() {
             ))}
           </div>
 
-          {/* ✅ Popup for ProductDetailClient */}
-          {selectedProductId && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full relative">
-                {/* Close button */}
-                <button
-                  className="absolute top-2 right-2 text-gray-600 hover:text-black text-2xl "
-                  onClick={() => setSelectedProductId(null)}
-                >
-                  &times;
-                </button>
-
-                <Storepopup productId={selectedProductId} />
-              </div>
-            </div>
-          )}
+            
         </>
       )}
     </>
