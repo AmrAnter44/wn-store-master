@@ -18,6 +18,9 @@
     --foreground: #000000;
   }
 }
+html, body {
+  height: 100%;
+}
 
 body {
   background: var(--background);

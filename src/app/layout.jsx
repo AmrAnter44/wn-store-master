@@ -14,10 +14,10 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={outfit.className}>
-      <body className={`${outfit.className} antialiased flex flex-col min-h-screen`}>
+    <html lang="en" className={`${outfit.className}  h-full`}>
+      <body className={`${outfit.className} antialiased  flex flex-col min-h-screen`}>
         <MyContextProvider>
-          <ClientLayoutWrapper>
+          <ClientLayoutWrapper className = "flex-1">
             {children}
             <Footer />
           </ClientLayoutWrapper>

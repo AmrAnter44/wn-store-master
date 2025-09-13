@@ -38,6 +38,7 @@ export default function RelatedProducts({ currentProduct }) {
       <h3 className="text-xl font-semibold mb-4">Related Products</h3>
       <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
         {related.map((product) => (
+        
                    <Link href={`/product/${product.id}`} key={product.id}>
                 <div
                   className="relative p-2 m-2  rounded-2xl flex flex-col justify-center items-center object-cover transition-opacity duration-700 ease-in-out opacity-100 hover:opacity-80"
@@ -101,10 +102,19 @@ export default function RelatedProducts({ currentProduct }) {
                         </p>
                       )}
                     </div>
+                                                          <Link      href={`/product/${product.id}`}             className="bg text-center text-white px-2 text-sm py-1 rounded mt-2 hover:bg-gray-800 transition">
+                                  Add to Cart
+                </Link>
                   </div>
+
+                  
                 </div>
+                
               </Link>
+
+             
         ))}
+
       </div>
     </div>
   )

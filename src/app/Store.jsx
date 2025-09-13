@@ -211,22 +211,23 @@ export default function StorePage() {
                         : product.name}
                     </h2>
 
-                    <div className="flex justify-between items-center mt-1">
+                    <div className="flex  justify-between items-center mt-1">
                       {product.newprice ? (
                         <>
+
                           <p>
+                            <span className="text-gray-600 font-semibold">
+                              {product.newprice} .LE
+                            </span>
+                          </p>
+                                                    <p>
                             <span className="text-gray-600 font-thin line-through mr-auto">
                               {product.price} .LE
                             </span>
                           </p>
-                          <p>
-                            <span className="text-gray-600 font-thin">
-                              {product.newprice} .LE
-                            </span>
-                          </p>
                         </>
                       ) : (
-                        <p className="text-gray-600 font-thin">
+                        <p className="text-gray-600 font-semibold">
                           {product.price} .LE
                         </p>
                       )}
