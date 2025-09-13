@@ -96,7 +96,7 @@ export default function Page() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-4 justify-center">
+    <div className="max-w-md min-h-screen mx-auto p-4 justify-center">
       <h1 className="text-2xl font-bold mb-4">Checkout</h1>
 
       {/* رسالة الخطأ */}
