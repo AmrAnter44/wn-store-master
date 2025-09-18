@@ -175,7 +175,7 @@ export default function StorePage() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           >
             {filteredProducts.map((product) => (
               <motion.div
@@ -194,7 +194,7 @@ export default function StorePage() {
                         : product.pictures?.[0] || "/placeholder.png"
                     }
                     alt={product.name}
-                    className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="w-full  object-cover transition-transform duration-500 group-hover:scale-105"
                     width={300}
                     height={400}
                   />
