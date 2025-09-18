@@ -1,51 +1,103 @@
-"use client"; // عشان الكومبوننت يشتغل في جهة الكلاينت في Next.js
+"use client";
 
 import { Facebook, Instagram, Mail } from "lucide-react"; 
-// استيراد أيقونات من مكتبة lucide-react
+import { motion } from "framer-motion";
+
+const iconVariants = {
+  hover: {
+    scale: 1.2,
+    rotate: 10,
+    transition: {
+      duration: 0.2,
+      ease: "easeOut"
+    }
+  },
+  tap: {
+    scale: 0.9
+  }
+};
+
+const containerVariants = {
+  hidden: { opacity: 0, y: 50 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.3,
+      ease: "easeOut"
+    }
+  }
+};
 
 export default function Footer() {
   return (
-    <footer className="bg text-white p-6 mt-10">
-      {/* الـ container الأساسي للـ footer */}
+    <motion.footer 
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-100px" }}
+      className="bg text-white p-6 mt-10"
+    >
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between">
         
-        {/* الجزء الخاص باللوجو / اسم المتجر */}
-        <div className="text-lg font-semibold mb-4 md:mb-0">
+        <motion.div 
+          variants={itemVariants}
+          className="text-lg font-semibold mb-4 md:mb-0"
+        >
           © {new Date().getFullYear()} Wn store
-          {/* {new Date().getFullYear()} => بيعرض السنة الحالية بشكل ديناميك */}
-        </div>
+        </motion.div>
 
-        {/* أيقونات السوشيال ميديا */}
-        <div className="flex space-x-6">
-          {/* رابط الفيسبوك */}
-          <a
+        <motion.div 
+          variants={itemVariants}
+          className="flex space-x-6"
+        >
+          <motion.a
+            variants={iconVariants}
+            whileHover="hover"
+            whileTap="tap"
             href="https://facebook.com/"
-            target="_blank" // يفتح الرابط في تاب جديدة
-            rel="noopener noreferrer" // حماية ضد بعض الثغرات
-            className="hover:text-blue-400 transition"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-blue-400 transition-colors duration-200"
           >
             <Facebook size={22} />
-          </a>
+          </motion.a>
 
-          {/* رابط الانستجرام */}
-          <a
+          <motion.a
+            variants={iconVariants}
+            whileHover="hover"
+            whileTap="tap"
             href="https://www.instagram.com/wn_store_eg_2025/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-pink-400 transition"
+            className="hover:text-pink-400 transition-colors duration-200"
           >
             <Instagram size={22} />
-          </a>
+          </motion.a>
 
-          {/* رابط البريد الإلكتروني */}
-          <a
+          <motion.a
+            variants={iconVariants}
+            whileHover="hover"
+            whileTap="tap"
             href="mailto:your@email.com"
-            className="hover:text-green-400 transition"
+            className="hover:text-green-400 transition-colors duration-200"
           >
             <Mail size={22} />
-          </a>
-        </div>
+          </motion.a>
+        </motion.div>
       </div>
-    </footer>
+    </motion.footer>
   );
 }

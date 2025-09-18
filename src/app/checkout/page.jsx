@@ -2,35 +2,122 @@
 import { useState } from "react";
 import { useMyContext } from "../../context/CartContext";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut",
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const formVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: 30 
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut"
+    }
+  }
+};
+
+const inputVariants = {
+  hidden: { 
+    opacity: 0, 
+    x: -20 
+  },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut"
+    }
+  }
+};
+
+const errorVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: -10,
+    scale: 0.95
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.3,
+      ease: "easeOut"
+    }
+  },
+  exit: {
+    opacity: 0,
+    y: -10,
+    scale: 0.95,
+    transition: {
+      duration: 0.2
+    }
+  }
+};
+
+const buttonVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: 20 
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut"
+    }
+  },
+  hover: {
+    scale: 1.02,
+    transition: {
+      duration: 0.2,
+      ease: "easeInOut"
+    }
+  },
+  tap: {
+    scale: 0.98
+  }
+};
 
 export default function Page() {
-  // جايب cart و clearCart من Context
   const { cart, clearCart } = useMyContext();
-
-  // state لتخزين بيانات الفورم
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
-  // الفانكشن اللي بتبعت الأوردر على واتساب
   const handleSendWhatsApp = () => {
-    setErrorMessage(""); // مسح أي Error قديم
+    setErrorMessage("");
 
-    // لو الكارت فاضي
     if (cart.length === 0) {
       setErrorMessage("Your cart is empty. Please add at least one product.");
       return;
     }
 
-    // لو البيانات ناقصة
     if (!name || !address || !phone) {
       setErrorMessage("Please fill in all fields.");
       return;
     }
 
-    // شرط رقم الموبايل
     if (!phone.startsWith("01")) {
       setErrorMessage("Phone number must start with 01.");
       return;
@@ -40,21 +127,16 @@ export default function Page() {
       return;
     }
 
-    // ----------------------------
-    // تفاصيل المنتجات في الكارت
-    // ----------------------------
     let cartDetails = "";
     cart.forEach((item) => {
       const itemPrice = item.newPrice ? item.newPrice : item.price;
       cartDetails += `${item.name}\n`;
       cartDetails += `Quantity: ${item.quantity}\n`;
 
-      // إضافة اللون لو مش فاضي
       if (item.selectedColor && item.selectedColor.trim() !== "") {
         cartDetails += `Color: ${item.selectedColor}\n`;
       }
 
-      // إضافة المقاس لو مش فاضي
       if (item.selectedSize && item.selectedSize.trim() !== "") {
         cartDetails += `Size: ${item.selectedSize}\n`;
       }
@@ -63,18 +145,12 @@ export default function Page() {
       cartDetails += "-------------------------\n";
     });
 
-    // ----------------------------
-    // حساب إجمالي السعر
-    // ----------------------------
     const total = cart.reduce(
       (acc, item) =>
         acc + (item.newPrice ? item.newPrice : item.price) * item.quantity,
       0
     );
 
-    // ----------------------------
-    // الرسالة النهائية اللي هتتبعت
-    // ----------------------------
     const message =
       `WN Store:\n\n` +
       `Name: ${name}\n` +
@@ -83,59 +159,97 @@ export default function Page() {
       `Products:\n${cartDetails}` +
       `Total: ${total} EGP\n`;
 
-    // رقم واتساب صاحب المتجر
     const yourWhatsAppNumber = "201211661802";
     const encodedMessage = encodeURIComponent(message);
 
-    // فتح واتساب بالرسالة الجاهزة
     window.open(`https://wa.me/${yourWhatsAppNumber}?text=${encodedMessage}`, "_blank");
 
-    // مسح الكارت وتحويل لصفحة النجاح
     clearCart();
     router.push("/succses");
   };
 
   return (
-    <div className="max-w-md min-h-screen mx-auto p-4 justify-center">
-      <h1 className="text-2xl font-bold mb-4">Checkout</h1>
-
-      {/* رسالة الخطأ */}
-      {errorMessage && (
-        <div className="bg-red-100 text-red-700 p-2 rounded mb-3 text-sm">
-          {errorMessage}
-        </div>
-      )}
-
-      {/* فورم البيانات */}
-      <input
-        type="text"
-        placeholder="Name"
-        className="border p-2 w-full mb-3"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <input
-        type="tel"
-        placeholder="Phone"
-        className="border p-2 w-full mb-3"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="Address"
-        className="border p-2 w-full h-30 mb-3"
-        value={address}
-        onChange={(e) => setAddress(e.target.value)}
-      />
-
-      {/* زرار تأكيد الطلب */}
-      <button
-        onClick={handleSendWhatsApp}
-        className="bg text-white px-4 py-2 rounded mx-auto"
+    <motion.div 
+      className="max-w-md min-h-screen mx-auto p-4 justify-center"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      <motion.h1 
+        className="text-2xl font-bold mb-4"
+        variants={formVariants}
       >
-        Confirm Order via WhatsApp
-      </button>
-    </div>
+        Checkout
+      </motion.h1>
+
+      <AnimatePresence mode="wait">
+        {errorMessage && (
+          <motion.div
+            className="bg-red-100 text-red-700 p-2 rounded mb-3 text-sm"
+            variants={errorVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            layout
+          >
+            {errorMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <motion.div variants={formVariants}>
+        <motion.input
+          type="text"
+          placeholder="Name"
+          className="border p-2 w-full mb-3"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          variants={inputVariants}
+          whileFocus={{
+            scale: 1.01,
+            borderColor: "#8b5cf6",
+            transition: { duration: 0.2 }
+          }}
+        />
+        
+        <motion.input
+          type="tel"
+          placeholder="Phone"
+          className="border p-2 w-full mb-3"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          variants={inputVariants}
+          whileFocus={{
+            scale: 1.01,
+            borderColor: "#8b5cf6",
+            transition: { duration: 0.2 }
+          }}
+        />
+        
+        <motion.input
+          type="text"
+          placeholder="Address"
+          className="border p-2 w-full h-30 mb-3"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          variants={inputVariants}
+          whileFocus={{
+            scale: 1.01,
+            borderColor: "#8b5cf6",
+            transition: { duration: 0.2 }
+          }}
+        />
+
+        <motion.button
+          onClick={handleSendWhatsApp}
+          className="bg text-white px-4 py-2 rounded mx-auto"
+          variants={buttonVariants}
+          whileHover="hover"
+          whileTap="tap"
+        >
+          Confirm Order via WhatsApp
+        </motion.button>
+      </motion.div>
+    </motion.div>
   );
 }

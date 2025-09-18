@@ -3,53 +3,49 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
-
-import { FaFilter, FaFilterCircleXmark } from "react-icons/fa6";
+import { motion } from "framer-motion";
+import { FaFilter, FaFilterCircleXmark, FaSpinner } from "react-icons/fa6";
 import { useMyContext } from "../context/CartContext";
-import { FaSpinner } from "react-icons/fa";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.3, staggerChildren: 0.08 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+};
 
 export default function StorePage() {
   const { addToCart } = useMyContext();
-
-  // 🟣 State
   const [hoveredId, setHoveredId] = useState(null);
-  const [selectedProductId, setSelectedProductId] = useState(null); // ✅ Popup state
-
-  // 🔍 Filters
   const [typeFilter, setTypeFilter] = useState("");
   const [colorFilter, setColorFilter] = useState("");
   const [sizeFilter, setSizeFilter] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-
-  // 📦 Products
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 🟢 Fetch products from Supabase
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
-
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .order("id", { ascending: true });
-
+      const { data, error } = await supabase.from("products").select("*").order("id", { ascending: true });
       if (error) {
         console.error("Error fetching products:", error);
       } else {
         setProducts(data);
       }
-
       setLoading(false);
     };
-
     fetchProducts();
   }, []);
 
-  // 🎯 Filter products
   const filteredProducts = products.filter((product) => {
     return (
       (!typeFilter || product.type === typeFilter) &&
@@ -61,137 +57,136 @@ export default function StorePage() {
   });
 
   return (
-    <>
+    <div className="min-h-screen bg-gray-50">
       {loading ? (
-<p className="flex justify-center items-center mt-10 bgg">
-  <FaSpinner className="animate-spin text-3xl mr-2" />
-
-</p>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex justify-center items-center min-h-screen"
+        >
+          <FaSpinner className="animate-spin text-4xl text-gray-400" />
+        </motion.div>
       ) : (
-        <>
-          {/* 🔘 Quick Type Filters */}
-          <div className="flex flex-wrap gap-2 p-4 bg-white shadow rounded mb-4">
-            {/* Dress Filter */}
-            <button
-              className={`px-8 py-2 rounded ${
-                typeFilter === "dress"
-                  ? "bg text-white"
-                  : "bg-gray-200"
-              }`}
-              onClick={() =>
-                setTypeFilter(typeFilter === "dress" ? "" : "dress")
-              }
-            >
-              Dress
-            </button>
-
-            {/* Casual Filter */}
-            <button
-              className={`px-8 py-2 rounded ${
-                typeFilter === "casual"
-                  ? "bg text-white"
-                  : "bg-gray-200"
-              }`}
-              onClick={() =>
-                setTypeFilter(typeFilter === "casual" ? "" : "casual")
-              }
-            >
-              Casual
-            </button>
-
-            {/* Reset All Filters */}
-            <button
-              onClick={() => {
-                setTypeFilter("");
-                setColorFilter("");
-                setSizeFilter("");
-                setMinPrice("");
-                setMaxPrice("");
-              }}
-              className={`px-4 py-2 rounded ${
-                !typeFilter &&
-                !colorFilter &&
-                !sizeFilter &&
-                !minPrice &&
-                !maxPrice
-                  ? "bg text-white"
-                  : "bg-gray-200 hover:bg-gray-300"
-              }`}
-            >
-              All
-            </button>
-
-            {/* Toggle Advanced Filters */}
-            <button
-              className="px-4 py-2 bg-gray-500 text-white rounded ml-auto"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              {showFilters ? <FaFilterCircleXmark /> : <FaFilter />}
-            </button>
-          </div>
-
-          {/* 🎛 Advanced Filters */}
-          {showFilters && (
-            <div className="flex flex-wrap gap-4 p-4 bg-gray-100 rounded mb-4">
-              {/* Color Filter */}
-              <select
-                value={colorFilter}
-                onChange={(e) => setColorFilter(e.target.value)}
-                className="border p-2 rounded"
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {/* Clean Filters */}
+          <motion.div 
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="bg-white rounded-xl shadow-sm p-6 mb-8"
+          >
+            <div className="flex flex-wrap items-center gap-4 mb-4">
+              <button
+                className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+                  typeFilter === "dress"
+                    ? "bg-black text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+                onClick={() => setTypeFilter(typeFilter === "dress" ? "" : "dress")}
               >
-                <option value="">Color</option>
-                <option value="black">Black</option>
-                <option value="white">White</option>
-                <option value="red">Red</option>
-                <option value="blue">Blue</option>
-                <option value="b09dc1da">Custom Purple</option>
-              </select>
-
-              {/* Size Filter */}
-              <select
-                value={sizeFilter}
-                onChange={(e) => setSizeFilter(e.target.value)}
-                className="border p-2 rounded"
+                Dresses
+              </button>
+              
+              <button
+                className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+                  typeFilter === "casual"
+                    ? "bg-black text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+                onClick={() => setTypeFilter(typeFilter === "casual" ? "" : "casual")}
               >
-                <option value="">Size</option>
-                <option value="S">S</option>
-                <option value="M">M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-              </select>
-
-              {/* Price Range */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  placeholder="Min Price"
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(e.target.value)}
-                  className="border p-2 rounded w-24"
-                />
-                <span>-</span>
-                <input
-                  type="number"
-                  placeholder="Max Price"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                  className="border p-2 rounded w-24"
-                />
-              </div>
+                Casual
+              </button>
+              
+              <button
+                className="px-6 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all"
+                onClick={() => {
+                  setTypeFilter("");
+                  setColorFilter("");
+                  setSizeFilter("");
+                  setMinPrice("");
+                  setMaxPrice("");
+                }}
+              >
+                Clear All
+              </button>
+              
+              <button
+                className="ml-auto p-2 rounded-full hover:bg-gray-100 transition-colors"
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                {showFilters ? <FaFilterCircleXmark className="w-5 h-5" /> : <FaFilter className="w-5 h-5" />}
+              </button>
             </div>
-          )}
 
-          {/* 🛍 Products Grid */}
-          <div className="p-2 grid gap-12 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {showFilters && (
+              <motion.div 
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="flex flex-wrap gap-4 pt-4 border-t border-gray-100"
+              >
+                <select
+                  value={colorFilter}
+                  onChange={(e) => setColorFilter(e.target.value)}
+                  className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                >
+                  <option value="">All Colors</option>
+                  <option value="black">Black</option>
+                  <option value="white">White</option>
+                  <option value="red">Red</option>
+                  <option value="blue">Blue</option>
+                </select>
+
+                <select
+                  value={sizeFilter}
+                  onChange={(e) => setSizeFilter(e.target.value)}
+                  className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                >
+                  <option value="">All Sizes</option>
+                  <option value="S">Small</option>
+                  <option value="M">Medium</option>
+                  <option value="L">Large</option>
+                  <option value="XL">XL</option>
+                </select>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    className="w-20 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                  />
+                  <span className="text-gray-500">—</span>
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    className="w-20 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                  />
+                </div>
+              </motion.div>
+            )}
+          </motion.div>
+
+          {/* Clean Product Grid */}
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+          >
             {filteredProducts.map((product) => (
-              <div
+              <motion.div
                 key={product.id}
-                className="relative p-2 m-2 rounded-2xl flex flex-col justify-center items-center transition-opacity duration-700 ease-in-out opacity-100 hover:opacity-80"
+                variants={itemVariants}
+                whileHover={{ y: -4 }}
+                className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
                 onMouseEnter={() => setHoveredId(product.id)}
                 onMouseLeave={() => setHoveredId(null)}
               >
-                {/* Product Image + Info داخل لينك */}
-                <Link href={`/product/${product.id}`} className="w-full">
+                <div className="relative overflow-hidden bg-gray-50">
                   <Image
                     src={
                       hoveredId === product.id
@@ -199,55 +194,45 @@ export default function StorePage() {
                         : product.pictures?.[0] || "/placeholder.png"
                     }
                     alt={product.name}
-                    className="rounded mx-auto object-cover"
+                    className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-105"
                     width={300}
                     height={400}
                   />
+                </div>
 
-                  <div className="flex flex-col text-start w-full p-2">
-                    <h2 className="text-lg font-semibold">
-                      {product.name.length > 30
-                        ? product.name.slice(0, 30) + "..."
-                        : product.name}
-                    </h2>
-
-                    <div className="flex  justify-between items-center mt-1">
-                      {product.newprice ? (
-                        <>
-
-                          <p>
-                            <span className="text-gray-600 font-semibold">
-                              {product.newprice} .LE
-                            </span>
-                          </p>
-                                                    <p>
-                            <span className="text-gray-600 font-thin line-through mr-auto">
-                              {product.price} .LE
-                            </span>
-                          </p>
-                        </>
-                      ) : (
-                        <p className="text-gray-600 font-semibold">
-                          {product.price} .LE
-                        </p>
-                      )}
-                    </div>
+                <div className="p-5">
+                  <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
+                    {product.name}
+                  </h3>
+                  
+                  <div className="flex items-center justify-between">
+                    {product.newprice ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg font-semibold text-gray-900">
+                          {product.newprice} LE
+                        </span>
+                        <span className="text-sm text-gray-500 line-through">
+                          {product.price} LE
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-lg font-semibold text-gray-900">
+                        {product.price} LE
+                      </span>
+                    )}
                   </div>
-                </Link>
 
-                {/* ✅ Add to Cart button */}
-
-                <Link      href={`/product/${product.id}`}             className="bg text-white px-4 py-2 rounded mt-2 hover:bg-gray-800 transition">
-                                  Add to Cart
-                </Link>
-              </div>
+                  <Link href={`/product/${product.id}`}>
+                    <button className="w-full mt-4 bg text-white py-2.5 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium">
+                      View Details
+                    </button>
+                  </Link>
+                </div>
+              </motion.div>
             ))}
-          </div>
-
-            
-        </>
+          </motion.div>
+        </div>
       )}
-    </>
+    </div>
   );
 }
- 
