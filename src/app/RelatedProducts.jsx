@@ -95,9 +95,9 @@ export default function RelatedProducts({ currentProduct }) {
             }}
             whileTap={{ scale: 0.95 }}
           >
-            <Link href={`/product/${product.id}`}>
+            <Link href={`/product/${product.id}`} className="block">
               <div
-                className="relative p-2 m-2 rounded-2xl flex flex-col justify-center items-center object-cover transition-opacity duration-700 ease-in-out opacity-100"
+                className="relative p-2 m-2 rounded-2xl flex flex-col justify-center items-center object-cover transition-opacity duration-700 ease-in-out opacity-100 cursor-pointer"
                 onMouseEnter={() => setHoveredId(product.id)}
                 onMouseLeave={() => setHoveredId(null)}
               >
@@ -138,7 +138,7 @@ export default function RelatedProducts({ currentProduct }) {
                           ease: "easeOut"
                         }}
                         whileHover={{ scale: 1.25 }}
-                        className="w-2 h-2 transition-transform duration-200"
+                        className="w-2 h-2 transition-transform duration-200 rounded-full border border-white"
                         style={{ backgroundColor: color }}
                       />
                     ))}
@@ -182,17 +182,14 @@ export default function RelatedProducts({ currentProduct }) {
                     )}
                   </div>
                   
+                  {/* Button replaced with visual indicator - no nested link */}
                   <motion.div
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     transition={{ duration: 0.1 }}
+                    className="bg text-center text-white px-2 text-sm py-1 rounded mt-2 hover:bg-gray-800 transition-colors duration-200"
                   >
-                    <Link      
-                      href={`/product/${product.id}`}             
-                      className="bg text-center text-white px-2 text-sm py-1 rounded mt-2 hover:bg-gray-800 transition-colors duration-200"
-                    >
-                      Add to Cart
-                    </Link>
+                    View Details
                   </motion.div>
                 </motion.div>
               </div>
