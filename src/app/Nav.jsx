@@ -13,7 +13,7 @@ export default function Navbar() {
   const { cart } = useMyContext();
   const cartCount = cart.length;
 
-  // ✅ تغيير حالة الـ Navbar عند الـ Scroll
+  /* ✅ تغيير حالة الـ Navbar عند الـ Scroll */
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
@@ -34,16 +34,13 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center text-black">
           {/* ✅ Logo */}
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.2 }}
-          >
+          <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
             <Image
               src={scrolled ? "/darklogo.png" : "/whitelogo.png"}
               alt="Logo"
               width={60}
               height={60}
-              priority
+              className="object-contain"
             />
           </motion.div>
 
@@ -99,13 +96,13 @@ export default function Navbar() {
         </div>
       </motion.nav>
 
-      {/* ✅ Background Section */}
+      {/* ✅ Hero Section بخلفية شغالة على Safari */}
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
-        className="w-full min-h-screen bg-fixed bg-cover bg-center flex items-center md:items-start justify-center md:justify-end"
-        style={{ backgroundImage: "url('/bg.png')" }} // ✅ حل مشكلة bg-[url()]
+        style={{ backgroundImage: "url('/bg.png')" }}
+        className="w-full min-h-screen bg-cover bg-center bg-no-repeat flex items-center md:items-start justify-center md:justify-end"
       >
         <motion.div
           initial={{ opacity: 0, y: 50 }}
