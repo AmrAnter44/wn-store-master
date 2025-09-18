@@ -1,6 +1,6 @@
 "use client";
 import React from 'react'
-import logo from '../../public/darklogo.png'
+import logo from '../../public/whitelogo.png'
 import Image from 'next/image'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCartShopping } from "@fortawesome/free-solid-svg-icons";
@@ -15,7 +15,7 @@ export default function NavT() {
   return (
     <>
     
-      <div className="sticky top-0 nava border-2 z-50 border-[#b09dc1]">
+      <div className="sticky top-0 bg border-2 z-50 border-[#b09dc1]">
         <div className=" h-16 flex items-center justify-between text-2xl font-bold text-gray-800  ">
           <Link href="/"><Image src={logo} width={100} height={100} className="ml-8" alt="logo" /> </Link>
 

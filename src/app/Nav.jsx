@@ -46,7 +46,7 @@ export default function Navbar() {
 
           {/* ✅ Links */}
           <div className="flex gap-4">
-            <div className="flex items-center gap-2 lg:gap-4 mr-4 lg:mr-9">
+            <div className="flex items-center gap-2 lg:gap-4  lg:mr-9">
               <motion.div
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
