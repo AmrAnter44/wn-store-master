@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -133,51 +133,122 @@ const loadingVariants = {
   }
 };
 
+const searchVariants = {
+  focus: {
+    scale: 1.02,
+    boxShadow: "0 0 0 3px rgba(168, 85, 247, 0.1)",
+    transition: {
+      duration: 0.2
+    }
+  }
+};
+
 export default function ManageProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [editingProduct, setEditingProduct] = useState(null);
   const [editName, setEditName] = useState("");
   const [editPrice, setEditPrice] = useState("");
   const [editNewPrice, setEditNewPrice] = useState("");
   const [editColors, setEditColors] = useState([]);
+  const [editPictures, setEditPictures] = useState([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
 
   const colorOptions = [
-    "white","black","red","blue","green","yellow","orange","purple",
+    "white","black","red","fuchsia","green","yellow","orange","purple",
     "pink","brown","gray","beige","cyan","magenta","lime","indigo",
     "violet","turquoise","gold","silver","navy","maroon","olive","teal"
   ];
 
+  // Filter products based on search term
+  const filteredProducts = useMemo(() => {
+    if (!searchTerm.trim()) return products;
+    
+    return products.filter(product =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase().trim())
+    );
+  }, [products, searchTerm]);
+
+  const checkStorageSetup = async () => {
+    try {
+      const { data, error } = await supabase.storage.listBuckets();
+      
+      if (error) {
+        console.error('Storage check error:', error);
+        setMessage('⚠️ Call 01028518754');
+        return;
+      }
+
+      const bucketExists = data.some(bucket => bucket.name === 'product-images');
+      
+    } catch (error) {
+      console.error('Storage setup check failed:', error);
+    }
+  };
+
   const fetchProducts = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .order("id", { ascending: true });
-    if (error) console.error(error);
-    else setProducts(data);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("id", { ascending: true });
+        
+      if (error) {
+        console.error(error);
+        setMessage("Error loading products: " + error.message);
+      } else {
+        setProducts(data || []);
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+      setMessage("Error loading products: " + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
+    checkStorageSetup();
     fetchProducts();
   }, []);
 
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
 
-    const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
-    const result = await res.json();
+    try {
+      const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
+      
+      if (!res.ok) {
+        let errorMessage = `HTTP error! status: ${res.status}`;
+        try {
+          const errorData = await res.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (parseError) {
+          try {
+            const errorText = await res.text();
+            errorMessage = errorText || errorMessage;
+          } catch (textError) {
+            // Keep the HTTP status message
+          }
+        }
+        
+        setMessage(errorMessage);
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
 
-    if (res.ok) {
       setMessage("Product deleted successfully!");
       fetchProducts();
       setTimeout(() => setMessage(""), 3000);
-    } else {
-      setMessage(result.error || "Error deleting product");
-      setTimeout(() => setMessage(""), 3000);
+      
+    } catch (error) {
+      console.error("Delete error:", error);
+      setMessage("Error deleting product: " + error.message);
+      setTimeout(() => setMessage(""), 5000);
     }
   };
 
@@ -187,6 +258,7 @@ export default function ManageProducts() {
     setEditPrice(prod.price);
     setEditNewPrice(prod.newprice || "");
     setEditColors(prod.colors || []);
+    setEditPictures(prod.pictures || []);
   };
 
   const toggleColor = (color) => {
@@ -195,27 +267,173 @@ export default function ManageProducts() {
     );
   };
 
+  const handleImageUpload = async (event) => {
+    const files = Array.from(event.target.files);
+    if (files.length === 0) return;
+
+    setUploadingImages(true);
+    const uploadedUrls = [];
+
+    try {
+      for (const file of files) {
+        if (!file.type.startsWith('image/')) {
+          console.warn(`Skipping non-image file: ${file.name}`);
+          setMessage(`File ${file.name} is not an image`);
+          continue;
+        }
+
+        if (file.size > 5242880) {
+          console.warn(`File too large: ${file.name}`);
+          setMessage(`File ${file.name} is too large (max 5MB)`);
+          continue;
+        }
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+        
+        const { data, error } = await supabase.storage
+          .from('product-images')
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (error) {
+          console.error('Upload error for', file.name, ':', error);
+          
+          if (error.message.includes('Bucket not found')) {
+            setMessage('❌ Storage bucket "product-images" not found. Please create it manually in Supabase Dashboard: Storage > Create Bucket > Name: "product-images" > Public: ✅');
+            setTimeout(() => setMessage(""), 10000);
+            break;
+          } else if (error.message.includes('row-level security') || error.message.includes('RLS')) {
+            setMessage('🔒 RLS Policy Error: Please run the SQL commands to fix storage policies. Check console for details.');
+            console.error('RLS Error - Run this SQL in Supabase:', `
+              ALTER TABLE storage.objects DISABLE ROW LEVEL SECURITY;
+              -- OR create proper policies:
+              ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+              CREATE POLICY "Allow public upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product-images');
+              CREATE POLICY "Allow public read" ON storage.objects FOR SELECT USING (bucket_id = 'product-images');
+              CREATE POLICY "Allow public delete" ON storage.objects FOR DELETE USING (bucket_id = 'product-images');
+            `);
+            setTimeout(() => setMessage(""), 15000);
+            break;
+          } else if (error.message.includes('permission') || error.message.includes('denied')) {
+            setMessage('🚫 Permission denied. Please check your Supabase storage policies and make bucket public.');
+            setTimeout(() => setMessage(""), 8000);
+            break;
+          } else {
+            setMessage(`❌ Error uploading ${file.name}: ${error.message}`);
+          }
+          continue;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(fileName);
+
+        if (urlData?.publicUrl) {
+          uploadedUrls.push(urlData.publicUrl);
+        }
+      }
+
+      if (uploadedUrls.length > 0) {
+        setEditPictures(prev => [...prev, ...uploadedUrls]);
+        setMessage(`✅ Successfully uploaded ${uploadedUrls.length} image(s)`);
+        setTimeout(() => setMessage(""), 3000);
+      } else if (uploadedUrls.length === 0 && files.length > 0) {
+        if (!message.includes('Bucket not found') && !message.includes('RLS Policy') && !message.includes('Permission denied')) {
+          setMessage("❌ No images were uploaded successfully");
+          setTimeout(() => setMessage(""), 3000);
+        }
+      }
+
+    } catch (error) {
+      console.error('Image upload error:', error);
+      if (error.message.includes('Bucket not found')) {
+        setMessage('❌ Storage bucket "product-images" not found. Please create it manually in Supabase Dashboard: Storage > Create Bucket > Name: "product-images" > Public: ✅');
+        setTimeout(() => setMessage(""), 10000);
+      } else if (error.message.includes('row-level security') || error.message.includes('RLS')) {
+        setMessage('🔒 RLS Policy Error: Please run the SQL commands to fix storage policies. Check console for details.');
+        console.error('RLS Error - Run this SQL in Supabase:', `
+          ALTER TABLE storage.objects DISABLE ROW LEVEL SECURITY;
+        `);
+        setTimeout(() => setMessage(""), 15000);
+      } else {
+        setMessage("❌ Error uploading images: " + error.message);
+        setTimeout(() => setMessage(""), 5000);
+      }
+    } finally {
+      setUploadingImages(false);
+      event.target.value = '';
+    }
+  };
+
+  const removeImage = async (indexToRemove) => {
+    const imageUrl = editPictures[indexToRemove];
+    
+    try {
+      if (imageUrl && imageUrl.includes('/product-images/')) {
+        const urlParts = imageUrl.split('/product-images/');
+        const fileName = urlParts[urlParts.length - 1];
+        
+        const { error } = await supabase.storage
+          .from('product-images')
+          .remove([fileName]);
+          
+        if (error) {
+          console.error('Error deleting image from storage:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Storage delete error:', error);
+    }
+    
+    setEditPictures(prev => prev.filter((_, index) => index !== indexToRemove));
+  };
+
   const handleSaveEdit = async () => {
-    if (!editName || !editPrice) return alert("Name and price required!");
+    if (!editName.trim() || !editPrice) {
+      alert("Name and price are required!");
+      return;
+    }
 
-    const { data, error } = await supabase
-      .from("products")
-      .update({
-        name: editName,
-        price: Number(editPrice),
-        newprice: editNewPrice ? Number(editNewPrice) : null,
-        colors: editColors
-      })
-      .eq("id", editingProduct.id);
+    try {
+      const res = await fetch(`/api/products/${editingProduct.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: editName.trim(),
+          price: Number(editPrice),
+          newprice: editNewPrice ? Number(editNewPrice) : null,
+          colors: editColors,
+          pictures: editPictures
+        }),
+      });
 
-    if (error) {
-      alert("Error updating product: " + error.message);
-    } else {
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to update product");
+      }
+
       setEditingProduct(null);
       setMessage("Product updated successfully!");
       fetchProducts();
       setTimeout(() => setMessage(""), 3000);
+    } catch (error) {
+      console.error("Update error:", error);
+      setMessage("Error updating product: " + error.message);
+      setTimeout(() => setMessage(""), 5000);
     }
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+  };
+
+  const closeEditModal = () => {
+    setEditingProduct(null);
   };
 
   return (
@@ -234,11 +452,68 @@ export default function ManageProducts() {
         Manage Products
       </motion.h1>
 
+      {/* Search Bar */}
+      <motion.div 
+        className="mb-6 max-w-md mx-auto"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+      >
+        <div className="relative">
+          <motion.input
+            type="text"
+            placeholder=" Search products by name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-4 py-3 pl-12 pr-12 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-fuchsia-600 transition-all duration-200"
+            variants={searchVariants}
+            whileFocus="focus"
+          />
+          <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg">
+!
+          </div>
+          <AnimatePresence>
+            {searchTerm && (
+              <motion.button
+                onClick={clearSearch}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors text-lg"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                ✕
+              </motion.button>
+            )}
+          </AnimatePresence>
+        </div>
+        
+        {/* Search Results Info */}
+        <AnimatePresence>
+          {searchTerm && (
+            <motion.p 
+              className="text-sm text-gray-600 mt-2 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {filteredProducts.length === 0 
+                ? `No products found for "${searchTerm}"` 
+                : `Found ${filteredProducts.length} product${filteredProducts.length !== 1 ? 's' : ''} for "${searchTerm}"`
+              }
+            </motion.p>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
+      {/* Messages */}
       <AnimatePresence>
         {message && (
           <motion.p 
-            className={`text-center mb-4 ${
-              message.includes("successfully") ? "text-green-600" : "text-red-600"
+            className={`text-center mb-4 p-3 rounded ${
+              message.includes("successfully") ? "text-green-600 bg-green-50" : "text-red-600 bg-red-50"
             }`}
             variants={messageVariants}
             initial="hidden"
@@ -251,6 +526,7 @@ export default function ManageProducts() {
         )}
       </AnimatePresence>
 
+      {/* Loading State */}
       {loading ? (
         <motion.div 
           className="flex flex-col items-center justify-center py-20"
@@ -265,12 +541,43 @@ export default function ManageProducts() {
           />
           <p className="text-center">Loading products...</p>
         </motion.div>
+      ) : filteredProducts.length === 0 ? (
+        /* Empty State */
+        <motion.div 
+          className="text-center py-20"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4 }}
+        >
+          <div className="text-6xl mb-4">📦</div>
+          <h3 className="text-xl font-semibold text-gray-600 mb-2">
+            {searchTerm ? 'No products found' : 'No products yet'}
+          </h3>
+          <p className="text-gray-500">
+            {searchTerm 
+              ? `Try searching for something else or clear the search to see all products.` 
+              : 'Add your first product to get started!'
+            }
+          </p>
+          {searchTerm && (
+            <motion.button
+              onClick={clearSearch}
+              className="mt-4 px-4 py-2 bg-fuchsia-600 text-white rounded hover:bg-fuchsia-700 transition"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Show All Products
+            </motion.button>
+          )}
+        </motion.div>
       ) : (
+        /* Products Grid */
         <motion.div 
           className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
           variants={containerVariants}
+          key={searchTerm} // Re-animate when search changes
         >
-          {products.map((prod, index) => (
+          {filteredProducts.map((prod, index) => (
             <motion.div
               key={prod.id}
               className="border rounded-xl p-4 relative flex flex-col items-center shadow hover:shadow-lg transition"
@@ -280,6 +587,7 @@ export default function ManageProducts() {
               layout
             >
               <motion.div
+                className="w-full h-48 mb-3"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
@@ -288,13 +596,13 @@ export default function ManageProducts() {
                   src={prod.pictures?.[0] || "/placeholder.png"}
                   alt={prod.name}
                   width={400}
-                  height={300}
-                  className="rounded object-cover"
+                  height={250}
+                  className="rounded object-cover w-full h-full"
                 />
               </motion.div>
 
               <motion.h2 
-                className="font-semibold text-lg text-center"
+                className="font-semibold text-lg text-center mb-2"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 + 0.1 }}
@@ -303,23 +611,24 @@ export default function ManageProducts() {
               </motion.h2>
 
               <motion.div
+                className="text-center mb-3"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 + 0.2 }}
               >
-                <p className="text-gray-600 font-thin">{prod.price} LE</p>
-                {prod.newprice && <p className="text-gray-500 font-thin">New: {prod.newprice} LE</p>}
+                <p className="text-gray-600 font-medium">{prod.price} LE</p>
+                {prod.newprice && <p className="text-gray-500 font-medium">New: {prod.newprice} LE</p>}
               </motion.div>
 
               <motion.div 
-                className="flex gap-2 mt-3"
+                className="flex gap-2"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 + 0.3 }}
               >
                 <motion.button
                   onClick={() => openEditModal(prod)}
-                  className="px-3 py-1 bg text-white rounded transition"
+                  className="px-3 py-1 bg-fuchsia-600 text-white rounded transition hover:bg-fuchsia-700"
                   variants={buttonVariants}
                   initial="idle"
                   whileHover="hover"
@@ -343,19 +652,19 @@ export default function ManageProducts() {
         </motion.div>
       )}
 
-      {/* Modal للتعديل */}
+      {/* Edit Modal */}
       <AnimatePresence>
         {editingProduct && (
           <motion.div
-            className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50"
+            className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50 p-4"
             variants={backdropVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
-            onClick={() => setEditingProduct(null)}
+            onClick={closeEditModal}
           >
             <motion.div
-              className="bg-white p-6 rounded shadow-lg w-full max-w-md"
+              className="bg-white p-6 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
               variants={modalVariants}
               initial="hidden"
               animate="visible"
@@ -375,72 +684,144 @@ export default function ManageProducts() {
                 type="text"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                placeholder="Name"
-                className="w-full mb-2 p-2 border rounded"
+                placeholder="Product Name *"
+                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-fuchsia-600"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.1 }}
-                whileFocus={{ scale: 1.01, borderColor: "#8b5cf6" }}
               />
 
               <motion.input
                 type="number"
                 value={editPrice}
                 onChange={(e) => setEditPrice(e.target.value)}
-                placeholder="Price"
-                className="w-full mb-2 p-2 border rounded"
+                placeholder="Price *"
+                className="w-full mb-3 p-3 border rounded-lg focus:outline-none focus:border-fuchsia-600"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.2 }}
-                whileFocus={{ scale: 1.01, borderColor: "#8b5cf6" }}
               />
 
               <motion.input
                 type="number"
                 value={editNewPrice}
                 onChange={(e) => setEditNewPrice(e.target.value)}
-                placeholder="New Price"
-                className="w-full mb-2 p-2 border rounded"
+                placeholder="New Price (Optional)"
+                className="w-full mb-4 p-3 border rounded-lg focus:outline-none focus:border-fuchsia-600"
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.3 }}
-                whileFocus={{ scale: 1.01, borderColor: "#8b5cf6" }}
               />
 
+              {/* Colors */}
               <motion.div 
-                className="flex flex-wrap gap-2 mb-4"
+                className="mb-4"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.4 }}
               >
-                {colorOptions.map((color, idx) => (
-                  <motion.button
-                    key={color}
-                    type="button"
-                    onClick={() => toggleColor(color)}
-                    className={`px-2 py-1 rounded border ${
-                      editColors.includes(color) ? "bg text-white" : "bg-white"
-                    }`}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.2, delay: idx * 0.02 }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {color}
-                  </motion.button>
-                ))}
+                <h3 className="text-sm font-semibold mb-2">Colors:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {colorOptions.map((color, idx) => (
+                    <motion.button
+                      key={color}
+                      type="button"
+                      onClick={() => toggleColor(color)}
+                      className={`px-3 py-1 rounded border text-sm transition ${
+                        editColors.includes(color) 
+                          ? "bg-fuchsia-600 text-white border-fuchsia-600" 
+                          : "bg-white text-gray-700 border-gray-300 hover:border-fuchsia-600"
+                      }`}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.2, delay: idx * 0.02 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {color}
+                    </motion.button>
+                  ))}
+                </div>
               </motion.div>
 
+              {/* Images */}
               <motion.div 
-                className="flex justify-end gap-2"
-                initial={{ opacity: 0, y: 20 }}
+                className="mb-6"
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: 0.5 }}
               >
+                <h3 className="text-sm font-semibold mb-3">Images:</h3>
+                
+                {/* Current Images */}
+                {editPictures.length > 0 && (
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    {editPictures.map((img, idx) => (
+                      <div key={idx} className="relative group">
+                        <Image
+                          src={img}
+                          alt={`Product ${idx + 1}`}
+                          width={120}
+                          height={120}
+                          className="rounded object-cover w-full h-24"
+                        />
+                        <button
+                          onClick={() => removeImage(idx)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Upload New Images */}
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-fuchsia-600 transition">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="image-upload"
+                    disabled={uploadingImages}
+                  />
+                  <label 
+                    htmlFor="image-upload" 
+                    className={`cursor-pointer text-fuchsia-600 hover:text-fuchsia-700 font-medium ${
+                      uploadingImages ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {uploadingImages ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <motion.div
+                          className="w-4 h-4 border-2 border-fuchsia-600 border-t-transparent rounded-full"
+                          variants={loadingVariants}
+                          animate="animate"
+                        />
+                        Uploading...
+                      </span>
+                    ) : (
+                      '📁 Upload Images'
+                    )}
+                  </label>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Click to select multiple images (Max 5MB each)
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Modal Actions */}
+              <motion.div 
+                className="flex justify-end gap-3"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.6 }}
+              >
                 <motion.button
-                  onClick={() => setEditingProduct(null)}
-                  className="px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-500 transition"
+                  onClick={closeEditModal}
+                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 transition"
                   variants={buttonVariants}
                   initial="idle"
                   whileHover="hover"
@@ -450,13 +831,14 @@ export default function ManageProducts() {
                 </motion.button>
                 <motion.button
                   onClick={handleSaveEdit}
-                  className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition disabled:opacity-50"
                   variants={buttonVariants}
                   initial="idle"
                   whileHover="hover"
                   whileTap="tap"
+                  disabled={uploadingImages}
                 >
-                  Save
+                  {uploadingImages ? 'Uploading...' : 'Save Changes'}
                 </motion.button>
               </motion.div>
             </motion.div>

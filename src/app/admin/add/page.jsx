@@ -129,7 +129,7 @@ export default function AddProduct() {
     "violet","turquoise","gold","silver","navy","maroon","olive","teal"
   ];
   const sizeOptions = ["S", "M", "L", "XL"];
-  const typeOptions = ["dress", "casual"];
+  const typeOptions = ["dress", "casual", "Bag"];
 
   const handleCheckboxChange = (value, state, setState) => {
     if (state.includes(value)) {
