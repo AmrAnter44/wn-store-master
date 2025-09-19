@@ -3,7 +3,7 @@ import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Animation variants
+// Animation variants (same as before)
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -109,6 +109,17 @@ const messageVariants = {
   }
 };
 
+const loadingVariants = {
+  animate: {
+    rotate: 360,
+    transition: {
+      duration: 1,
+      repeat: Infinity,
+      ease: "linear"
+    }
+  }
+};
+
 export default function AddProduct() {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
@@ -122,6 +133,7 @@ export default function AddProduct() {
   const [message, setMessage] = useState("");
   const [showColorOptions, setShowColorOptions] = useState(false);
   const [newprice, setnewprice] = useState("");
+  const [uploadingImages, setUploadingImages] = useState(false);
 
   const colorOptions = [
     "white","black","red","blue","green","yellow","orange","purple",
@@ -139,40 +151,140 @@ export default function AddProduct() {
     }
   };
 
-  const resizeAndPreviewFiles = async (selectedFiles) => {
-    const resizedFiles = [];
-    const previews = [];
+  const handleFileChange = async (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    if (selectedFiles.length === 0) return;
 
-    for (let file of selectedFiles) {
-      const img = new Image();
-      const reader = new FileReader();
+    setUploadingImages(true);
+    setMessage("Processing images...");
 
-      const resizedFile = await new Promise((resolve) => {
-        reader.onload = (e) => { img.src = e.target.result; };
+    try {
+      const resizedFiles = [];
+      const previews = [];
 
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
-          const targetWidth = 768;
-          const targetHeight = 950;
-          canvas.width = targetWidth;
-          canvas.height = targetHeight;
-          ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-          canvas.toBlob((blob) => {
-            const newFile = new File([blob], file.name, { type: file.type });
-            resolve(newFile);
-            previews.push(URL.createObjectURL(newFile));
-          }, file.type);
-        };
+      for (let file of selectedFiles) {
+        if (!file.type.startsWith('image/')) {
+          console.warn(`Skipping non-image file: ${file.name}`);
+          setMessage(`File ${file.name} is not an image`);
+          continue;
+        }
 
-        reader.readAsDataURL(file);
-      });
+        if (file.size > 5242880) { // 5MB
+          console.warn(`File too large: ${file.name}`);
+          setMessage(`File ${file.name} is too large (max 5MB)`);
+          continue;
+        }
 
-      resizedFiles.push(resizedFile);
+        const img = new Image();
+        const reader = new FileReader();
+
+        const resizedFile = await new Promise((resolve) => {
+          reader.onload = (e) => { img.src = e.target.result; };
+
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            const targetWidth = 768;
+            const targetHeight = 950;
+            canvas.width = targetWidth;
+            canvas.height = targetHeight;
+            ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+            canvas.toBlob((blob) => {
+              const newFile = new File([blob], file.name, { type: file.type });
+              resolve(newFile);
+              previews.push(URL.createObjectURL(newFile));
+            }, file.type);
+          };
+
+          reader.readAsDataURL(file);
+        });
+
+        resizedFiles.push(resizedFile);
+      }
+
+      // إضافة الصور الجديدة للصور الموجودة بدلاً من استبدالها
+      setFiles(prevFiles => [...prevFiles, ...resizedFiles]);
+      setPreviewUrls(prevPreviews => [...prevPreviews, ...previews]);
+      setMessage("");
+    } catch (error) {
+      console.error('Image processing error:', error);
+      setMessage("Error processing images: " + error.message);
+    } finally {
+      setUploadingImages(false);
+      // إعادة تعيين قيمة input لتمكين اختيار نفس الملفات مرة أخرى
+      e.target.value = '';
+    }
+  };
+
+  const removeImage = (indexToRemove) => {
+    // إزالة URL من الذاكرة لتجنب memory leaks
+    URL.revokeObjectURL(previewUrls[indexToRemove]);
+    
+    setFiles(prevFiles => prevFiles.filter((_, index) => index !== indexToRemove));
+    setPreviewUrls(prevPreviews => prevPreviews.filter((_, index) => index !== indexToRemove));
+  };
+
+  const uploadImages = async () => {
+    const pictureUrls = [];
+
+    for (let file of files) {
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+
+        const { data, error } = await supabase.storage
+          .from("product-images") // تغيير اسم bucket ليتطابق مع Manage Products
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (error) {
+          console.error('Upload error for', file.name, ':', error);
+          
+          if (error.message.includes('Bucket not found')) {
+            setMessage('❌ Storage bucket "product-images" not found. Please create it manually in Supabase Dashboard: Storage > Create Bucket > Name: "product-images" > Public: ✅');
+            setTimeout(() => setMessage(""), 10000);
+            break;
+          } else if (error.message.includes('row-level security') || error.message.includes('RLS')) {
+            setMessage('🔒 RLS Policy Error: Please run the SQL commands to fix storage policies. Check console for details.');
+            console.error('RLS Error - Run this SQL in Supabase:', `
+              ALTER TABLE storage.objects DISABLE ROW LEVEL SECURITY;
+              -- OR create proper policies:
+              ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+              CREATE POLICY "Allow public upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product-images');
+              CREATE POLICY "Allow public read" ON storage.objects FOR SELECT USING (bucket_id = 'product-images');
+              CREATE POLICY "Allow public delete" ON storage.objects FOR DELETE USING (bucket_id = 'product-images');
+            `);
+            setTimeout(() => setMessage(""), 15000);
+            break;
+          } else if (error.message.includes('permission') || error.message.includes('denied')) {
+            setMessage('🚫 Permission denied. Please check your Supabase storage policies and make bucket public.');
+            setTimeout(() => setMessage(""), 8000);
+            break;
+          } else {
+            setMessage(`❌ Error uploading ${file.name}: ${error.message}`);
+            setTimeout(() => setMessage(""), 5000);
+          }
+          continue;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(fileName);
+
+        if (urlData?.publicUrl) {
+          pictureUrls.push(urlData.publicUrl);
+        }
+
+      } catch (error) {
+        console.error(`Error uploading ${file.name}:`, error);
+        setMessage(`Error uploading ${file.name}: ${error.message}`);
+        continue;
+      }
     }
 
-    setFiles(resizedFiles);
-    setPreviewUrls(previews);
+    return pictureUrls;
   };
 
   const handleSubmit = async (e) => {
@@ -187,31 +299,16 @@ export default function AddProduct() {
     }
 
     try {
-      let pictureUrls = [];
+      setMessage("Uploading images...");
+      const pictureUrls = await uploadImages();
 
-      for (let file of files) {
-        const fileName = `${Date.now()}-${file.name.replace(/\s/g, "-")}`;
-
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from("products")
-          .upload(fileName, file);
-
-        if (uploadError) {
-          console.error("Storage upload error:", uploadError);
-          continue;
-        }
-
-        const { data: urlData, error: urlError } = supabase.storage
-          .from("products")
-          .getPublicUrl(fileName);
-
-        if (urlError) {
-          console.error("Get public URL error:", urlError);
-          continue;
-        }
-
-        pictureUrls.push(urlData.publicUrl);
+      if (pictureUrls.length === 0) {
+        setMessage("No images were uploaded successfully. Please try again.");
+        setLoading(false);
+        return;
       }
+
+      setMessage("Creating product...");
 
       const product = {
         name,
@@ -234,7 +331,12 @@ export default function AddProduct() {
       const result = await res.json();
 
       if (res.ok) {
-        setMessage("Product added successfully!");
+        setMessage("✅ Product added successfully!");
+        
+        // تنظيف URLs من الذاكرة لتجنب memory leaks
+        previewUrls.forEach(url => URL.revokeObjectURL(url));
+        
+        // Reset form
         setName("");
         setPrice("");
         setnewprice("");
@@ -244,14 +346,22 @@ export default function AddProduct() {
         setColors([]);
         setSizes([]);
         setType("");
+        
+        // Clear file input
+        const fileInput = document.querySelector('input[type="file"]');
+        if (fileInput) fileInput.value = '';
+        
+        setTimeout(() => setMessage(""), 5000);
       } else {
-        setMessage(result.error || "Error adding product");
+        setMessage("❌ " + (result.error || "Error adding product"));
+        setTimeout(() => setMessage(""), 5000);
       }
 
       console.log("Response:", result);
     } catch (err) {
       console.error(err);
-      setMessage(err.message);
+      setMessage("❌ " + err.message);
+      setTimeout(() => setMessage(""), 5000);
     }
 
     setLoading(false);
@@ -265,6 +375,15 @@ export default function AddProduct() {
       animate="visible"
       variants={containerVariants}
     >
+      <motion.h1 
+        className="text-2xl font-bold mb-6 text-center"
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        Add New Product
+      </motion.h1>
+
       <motion.input 
         type="text" 
         placeholder="Product Name" 
@@ -415,15 +534,42 @@ export default function AddProduct() {
       </motion.div>
 
       {/* Images */}
-      <motion.input 
-        type="file" 
-        multiple 
-        accept="image/*" 
-        onChange={(e) => resizeAndPreviewFiles([...e.target.files])} 
-        className="border p-2 rounded-md" 
-        required 
-        variants={inputVariants}
-      />
+      <motion.div variants={inputVariants}>
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-600 transition">
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+            id="image-upload"
+            disabled={uploadingImages}
+          />
+          <label 
+            htmlFor="image-upload" 
+            className={`cursor-pointer text-purple-600 hover:text-purple-700 font-medium ${
+              uploadingImages ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+          >
+            {uploadingImages ? (
+              <span className="flex items-center justify-center gap-2">
+                <motion.div
+                  className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full"
+                  variants={loadingVariants}
+                  animate="animate"
+                />
+                Processing Images...
+              </span>
+            ) : (
+              '📁 Select Images (Required)'
+            )}
+          </label>
+          <p className="text-xs text-gray-500 mt-2">
+            Select multiple images (Max 5MB each)<br />
+            You can add more images by selecting again
+          </p>
+        </div>
+      </motion.div>
       
       <AnimatePresence>
         {previewUrls.length > 0 && (
@@ -435,48 +581,47 @@ export default function AddProduct() {
             exit="hidden"
           >
             {previewUrls.map((url, i) => (
-              <motion.img 
-                key={i} 
-                src={url} 
-                alt={`preview-${i}`} 
-                className="w-24 h-32 object-cover rounded-md" 
+              <motion.div
+                key={i}
+                className="relative group"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: i * 0.1 }}
                 whileHover={{ scale: 1.05 }}
-              />
+              >
+                <img 
+                  src={url} 
+                  alt={`preview-${i}`} 
+                  className="w-24 h-32 object-cover rounded-md" 
+                />
+                <motion.button
+                  type="button"
+                  onClick={() => removeImage(i)}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition opacity-0 group-hover:opacity-100"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 0, scale: 0.8 }}
+                  whileHover={{ opacity: 1, scale: 1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  ×
+                </motion.button>
+              </motion.div>
             ))}
           </motion.div>
         )}
       </AnimatePresence>
 
-      <motion.button 
-        type="submit" 
-        disabled={loading} 
-        className="mt-3 bg text-white py-2 rounded-md transition"
-        variants={buttonVariants}
-        initial="idle"
-        animate={loading ? "loading" : "idle"}
-        whileHover={!loading ? "hover" : {}}
-        whileTap={!loading ? "tap" : {}}
-      >
-        <AnimatePresence mode="wait">
-          <motion.span
-            key={loading ? "loading" : "idle"}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            {loading ? "Adding..." : "Add Product"}
-          </motion.span>
-        </AnimatePresence>
-      </motion.button>
-
+      {/* Messages */}
       <AnimatePresence>
         {message && (
           <motion.p 
-            className="mt-2 text-center text-gray-600"
+            className={`text-center p-3 rounded ${
+              message.includes("successfully") || message.includes("✅") 
+                ? "text-green-600 bg-green-50" 
+                : message.includes("Processing") || message.includes("Uploading") || message.includes("Creating")
+                ? "text-blue-600 bg-blue-50"
+                : "text-red-600 bg-red-50"
+            }`}
             variants={messageVariants}
             initial="hidden"
             animate="visible"
@@ -486,6 +631,47 @@ export default function AddProduct() {
           </motion.p>
         )}
       </AnimatePresence>
+
+      <motion.button 
+        type="submit" 
+        disabled={loading || uploadingImages} 
+        className={`mt-3 py-3 rounded-md transition font-medium ${
+          loading || uploadingImages
+            ? "bg-gray-400 text-white cursor-not-allowed"
+            : "bg-purple-600 hover:bg-purple-700 text-white"
+        }`}
+        variants={buttonVariants}
+        initial="idle"
+        animate={loading ? "loading" : "idle"}
+        whileHover={!loading && !uploadingImages ? "hover" : {}}
+        whileTap={!loading && !uploadingImages ? "tap" : {}}
+      >
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={loading ? "loading" : "idle"}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <motion.div
+                  className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                  variants={loadingVariants}
+                  animate="animate"
+                />
+                Adding Product...
+              </>
+            ) : uploadingImages ? (
+              "Processing Images..."
+            ) : (
+              "Add Product"
+            )}
+          </motion.span>
+        </AnimatePresence>
+      </motion.button>
     </motion.form>
   );
 }

@@ -143,6 +143,32 @@ const searchVariants = {
   }
 };
 
+const confirmationVariants = {
+  hidden: {
+    opacity: 0,
+    scale: 0.7,
+    y: 50
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: {
+      duration: 0.3,
+      ease: "easeOut"
+    }
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.7,
+    y: 50,
+    transition: {
+      duration: 0.2,
+      ease: "easeIn"
+    }
+  }
+};
+
 export default function ManageProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -156,6 +182,11 @@ export default function ManageProducts() {
   const [editColors, setEditColors] = useState([]);
   const [editPictures, setEditPictures] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
+
+  // Confirmation modal state
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const colorOptions = [
     "white","black","red","fuchsia","green","yellow","orange","purple",
@@ -216,11 +247,23 @@ export default function ManageProducts() {
     fetchProducts();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
+  const showDeleteConfirmation = (product) => {
+    setProductToDelete(product);
+    setShowConfirmation(true);
+  };
+
+  const cancelDelete = () => {
+    setShowConfirmation(false);
+    setProductToDelete(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!productToDelete) return;
+
+    setDeleting(true);
 
     try {
-      const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/products/${productToDelete.id}`, { method: "DELETE" });
       
       if (!res.ok) {
         let errorMessage = `HTTP error! status: ${res.status}`;
@@ -249,6 +292,10 @@ export default function ManageProducts() {
       console.error("Delete error:", error);
       setMessage("Error deleting product: " + error.message);
       setTimeout(() => setMessage(""), 5000);
+    } finally {
+      setDeleting(false);
+      setShowConfirmation(false);
+      setProductToDelete(null);
     }
   };
 
@@ -393,7 +440,8 @@ export default function ManageProducts() {
 
   const handleSaveEdit = async () => {
     if (!editName.trim() || !editPrice) {
-      alert("Name and price are required!");
+      setMessage("Name and price are required!");
+      setTimeout(() => setMessage(""), 3000);
       return;
     }
 
@@ -470,7 +518,7 @@ export default function ManageProducts() {
             whileFocus="focus"
           />
           <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg">
-!
+            🔍
           </div>
           <AnimatePresence>
             {searchTerm && (
@@ -575,7 +623,7 @@ export default function ManageProducts() {
         <motion.div 
           className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
           variants={containerVariants}
-          key={searchTerm} // Re-animate when search changes
+          key={searchTerm}
         >
           {filteredProducts.map((prod, index) => (
             <motion.div
@@ -587,7 +635,7 @@ export default function ManageProducts() {
               layout
             >
               <motion.div
-                className="w-full h-58 mb-3"
+                className="lg:w-full h-72 lg:h-58 mb-3"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
@@ -637,7 +685,7 @@ export default function ManageProducts() {
                   Edit
                 </motion.button>
                 <motion.button
-                  onClick={() => handleDelete(prod.id)}
+                  onClick={() => showDeleteConfirmation(prod)}
                   className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
                   variants={buttonVariants}
                   initial="idle"
@@ -651,6 +699,87 @@ export default function ManageProducts() {
           ))}
         </motion.div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showConfirmation && productToDelete && (
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4"
+            variants={backdropVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            onClick={cancelDelete}
+          >
+            <motion.div
+              className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md"
+              variants={confirmationVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <motion.div
+                className="text-center mb-6"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="text-6xl mb-4">⚠️</div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">Delete Product?</h3>
+                <p className="text-gray-600 mb-2">
+                  Are you sure you want to delete
+                </p>
+                <p className="font-semibold text-gray-800">"{productToDelete.name}"?</p>
+                <p className="text-sm text-red-500 mt-2">
+                  This action cannot be undone!
+                </p>
+              </motion.div>
+
+              <motion.div
+                className="flex gap-3 justify-center"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+              >
+                <motion.button
+                  onClick={cancelDelete}
+                  className="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition disabled:opacity-50"
+                  variants={buttonVariants}
+                  initial="idle"
+                  whileHover={!deleting ? "hover" : {}}
+                  whileTap={!deleting ? "tap" : {}}
+                  disabled={deleting}
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  onClick={confirmDelete}
+                  className="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-50"
+                  variants={buttonVariants}
+                  initial="idle"
+                  whileHover={!deleting ? "hover" : {}}
+                  whileTap={!deleting ? "tap" : {}}
+                  disabled={deleting}
+                >
+                  {deleting ? (
+                    <span className="flex items-center gap-2">
+                      <motion.div
+                        className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                        variants={loadingVariants}
+                        animate="animate"
+                      />
+                      Deleting...
+                    </span>
+                  ) : (
+                    "Delete"
+                  )}
+                </motion.button>
+              </motion.div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Edit Modal */}
       <AnimatePresence>
@@ -803,7 +932,7 @@ export default function ManageProducts() {
                         Uploading...
                       </span>
                     ) : (
-                      '📁 Upload Images'
+                      'Upload Images'
                     )}
                   </label>
                   <p className="text-xs text-gray-500 mt-2">
