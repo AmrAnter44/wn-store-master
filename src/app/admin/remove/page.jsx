@@ -587,7 +587,7 @@ export default function ManageProducts() {
               layout
             >
               <motion.div
-                className="w-full h-48 mb-3"
+                className="w-full h-58 mb-3"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
@@ -596,7 +596,7 @@ export default function ManageProducts() {
                   src={prod.pictures?.[0] || "/placeholder.png"}
                   alt={prod.name}
                   width={400}
-                  height={250}
+                  height={550}
                   className="rounded object-cover w-full h-full"
                 />
               </motion.div>
