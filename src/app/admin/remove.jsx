@@ -209,7 +209,7 @@ export default function ManageProducts() {
       
       if (error) {
         console.error('Storage check error:', error);
-        setMessage('⚠️ Call 01028518754');
+        setMessage('Call 01028518754');
         return;
       }
 
@@ -314,14 +314,51 @@ export default function ManageProducts() {
     );
   };
 
+  // Image resize function
+  const resizeImage = (file, targetWidth = 768, targetHeight = 950) => {
+    return new Promise((resolve) => {
+      // Create image element properly for browser environment
+      const img = document.createElement('img');
+      const reader = new FileReader();
+
+      reader.onload = (e) => { 
+        img.src = e.target.result; 
+      };
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        
+        ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+        
+        canvas.toBlob((blob) => {
+          const resizedFile = new File([blob], file.name, { 
+            type: file.type,
+            lastModified: Date.now()
+          });
+          resolve(resizedFile);
+        }, file.type, 0.8); // 0.8 quality for better compression
+      };
+
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleImageUpload = async (event) => {
     const files = Array.from(event.target.files);
     if (files.length === 0) return;
 
     setUploadingImages(true);
-    const uploadedUrls = [];
-
+    setMessage("Processing images...");
+    
     try {
+      const processedFiles = [];
+      const uploadedUrls = [];
+
+      // First, resize all images
       for (const file of files) {
         if (!file.type.startsWith('image/')) {
           console.warn(`Skipping non-image file: ${file.name}`);
@@ -335,6 +372,21 @@ export default function ManageProducts() {
           continue;
         }
 
+        // Resize the image
+        const resizedFile = await resizeImage(file);
+        processedFiles.push(resizedFile);
+      }
+
+      if (processedFiles.length === 0) {
+        setMessage("No valid images to process");
+        setUploadingImages(false);
+        return;
+      }
+
+      setMessage("Uploading images...");
+
+      // Now upload the resized images
+      for (const file of processedFiles) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
         
@@ -349,27 +401,19 @@ export default function ManageProducts() {
           console.error('Upload error for', file.name, ':', error);
           
           if (error.message.includes('Bucket not found')) {
-            setMessage('❌ Storage bucket "product-images" not found. Please create it manually in Supabase Dashboard: Storage > Create Bucket > Name: "product-images" > Public: ✅');
+            setMessage('Storage bucket "product-images" not found. Please create it manually in Supabase Dashboard');
             setTimeout(() => setMessage(""), 10000);
             break;
           } else if (error.message.includes('row-level security') || error.message.includes('RLS')) {
-            setMessage('🔒 RLS Policy Error: Please run the SQL commands to fix storage policies. Check console for details.');
-            console.error('RLS Error - Run this SQL in Supabase:', `
-              ALTER TABLE storage.objects DISABLE ROW LEVEL SECURITY;
-              -- OR create proper policies:
-              ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
-              CREATE POLICY "Allow public upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product-images');
-              CREATE POLICY "Allow public read" ON storage.objects FOR SELECT USING (bucket_id = 'product-images');
-              CREATE POLICY "Allow public delete" ON storage.objects FOR DELETE USING (bucket_id = 'product-images');
-            `);
+            setMessage('RLS Policy Error: Please run the SQL commands to fix storage policies');
             setTimeout(() => setMessage(""), 15000);
             break;
           } else if (error.message.includes('permission') || error.message.includes('denied')) {
-            setMessage('🚫 Permission denied. Please check your Supabase storage policies and make bucket public.');
+            setMessage('Permission denied. Please check your Supabase storage policies');
             setTimeout(() => setMessage(""), 8000);
             break;
           } else {
-            setMessage(`❌ Error uploading ${file.name}: ${error.message}`);
+            setMessage(`Error uploading ${file.name}: ${error.message}`);
           }
           continue;
         }
@@ -385,30 +429,17 @@ export default function ManageProducts() {
 
       if (uploadedUrls.length > 0) {
         setEditPictures(prev => [...prev, ...uploadedUrls]);
-        setMessage(`✅ Successfully uploaded ${uploadedUrls.length} image(s)`);
+        setMessage(`Successfully uploaded ${uploadedUrls.length} image(s)`);
         setTimeout(() => setMessage(""), 3000);
-      } else if (uploadedUrls.length === 0 && files.length > 0) {
-        if (!message.includes('Bucket not found') && !message.includes('RLS Policy') && !message.includes('Permission denied')) {
-          setMessage("❌ No images were uploaded successfully");
-          setTimeout(() => setMessage(""), 3000);
-        }
+      } else if (uploadedUrls.length === 0 && processedFiles.length > 0) {
+        setMessage("No images were uploaded successfully");
+        setTimeout(() => setMessage(""), 3000);
       }
 
     } catch (error) {
       console.error('Image upload error:', error);
-      if (error.message.includes('Bucket not found')) {
-        setMessage('❌ Storage bucket "product-images" not found. Please create it manually in Supabase Dashboard: Storage > Create Bucket > Name: "product-images" > Public: ✅');
-        setTimeout(() => setMessage(""), 10000);
-      } else if (error.message.includes('row-level security') || error.message.includes('RLS')) {
-        setMessage('🔒 RLS Policy Error: Please run the SQL commands to fix storage policies. Check console for details.');
-        console.error('RLS Error - Run this SQL in Supabase:', `
-          ALTER TABLE storage.objects DISABLE ROW LEVEL SECURITY;
-        `);
-        setTimeout(() => setMessage(""), 15000);
-      } else {
-        setMessage("❌ Error uploading images: " + error.message);
-        setTimeout(() => setMessage(""), 5000);
-      }
+      setMessage("Error uploading images: " + error.message);
+      setTimeout(() => setMessage(""), 5000);
     } finally {
       setUploadingImages(false);
       event.target.value = '';
@@ -518,7 +549,7 @@ export default function ManageProducts() {
             whileFocus="focus"
           />
           <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg">
-            🔍
+            !
           </div>
           <AnimatePresence>
             {searchTerm && (
@@ -531,7 +562,7 @@ export default function ManageProducts() {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
-                ✕
+                X
               </motion.button>
             )}
           </AnimatePresence>
@@ -597,7 +628,7 @@ export default function ManageProducts() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4 }}
         >
-          <div className="text-6xl mb-4">📦</div>
+          <div className="text-6xl mb-4">X</div>
           <h3 className="text-xl font-semibold text-gray-600 mb-2">
             {searchTerm ? 'No products found' : 'No products yet'}
           </h3>
@@ -725,7 +756,7 @@ export default function ManageProducts() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="text-6xl mb-4">⚠️</div>
+                <div className="text-6xl mb-4">Warning</div>
                 <h3 className="text-xl font-bold text-gray-800 mb-2">Delete Product?</h3>
                 <p className="text-gray-600 mb-2">
                   Are you sure you want to delete
@@ -898,7 +929,7 @@ export default function ManageProducts() {
                           onClick={() => removeImage(idx)}
                           className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition"
                         >
-                          ×
+                          X
                         </button>
                       </div>
                     ))}
@@ -929,14 +960,15 @@ export default function ManageProducts() {
                           variants={loadingVariants}
                           animate="animate"
                         />
-                        Uploading...
+                        {message.includes("Processing") ? "Processing..." : "Uploading..."}
                       </span>
                     ) : (
                       'Upload Images'
                     )}
                   </label>
                   <p className="text-xs text-gray-500 mt-2">
-                    Click to select multiple images (Max 5MB each)
+                    Click to select multiple images (Max 5MB each)<br/>
+                    Images will be resized to 768x950px automatically
                   </p>
                 </div>
               </motion.div>
@@ -967,7 +999,7 @@ export default function ManageProducts() {
                   whileTap="tap"
                   disabled={uploadingImages}
                 >
-                  {uploadingImages ? 'Uploading...' : 'Save Changes'}
+                  {uploadingImages ? 'Processing...' : 'Save Changes'}
                 </motion.button>
               </motion.div>
             </motion.div>

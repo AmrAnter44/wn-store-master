@@ -132,7 +132,7 @@ export default function AddProduct() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [showColorOptions, setShowColorOptions] = useState(false);
-  const [newprice, setnewprice] = useState("");
+  const [newprice, setNewprice] = useState("");
   const [uploadingImages, setUploadingImages] = useState(false);
 
   const colorOptions = [
@@ -149,6 +149,38 @@ export default function AddProduct() {
     } else {
       setState([...state, value]);
     }
+  };
+
+  // Image resize function
+  const resizeImage = (file, targetWidth = 768, targetHeight = 950) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const reader = new FileReader();
+
+      reader.onload = (e) => { 
+        img.src = e.target.result; 
+      };
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        
+        ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+        
+        canvas.toBlob((blob) => {
+          const resizedFile = new File([blob], file.name, { 
+            type: file.type,
+            lastModified: Date.now()
+          });
+          resolve(resizedFile);
+        }, file.type, 0.8); // 0.8 quality for better compression
+      };
+
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleFileChange = async (e) => {
@@ -175,34 +207,16 @@ export default function AddProduct() {
           continue;
         }
 
-        const img = new Image();
-        const reader = new FileReader();
-
-        const resizedFile = await new Promise((resolve) => {
-          reader.onload = (e) => { img.src = e.target.result; };
-
-          img.onload = () => {
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
-            const targetWidth = 768;
-            const targetHeight = 950;
-            canvas.width = targetWidth;
-            canvas.height = targetHeight;
-            ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-            canvas.toBlob((blob) => {
-              const newFile = new File([blob], file.name, { type: file.type });
-              resolve(newFile);
-              previews.push(URL.createObjectURL(newFile));
-            }, file.type);
-          };
-
-          reader.readAsDataURL(file);
-        });
-
+        // Resize the image using the new function
+        const resizedFile = await resizeImage(file);
         resizedFiles.push(resizedFile);
+        
+        // Create preview from resized file
+        const previewUrl = URL.createObjectURL(resizedFile);
+        previews.push(previewUrl);
       }
 
-      // إضافة الصور الجديدة للصور الموجودة بدلاً من استبدالها
+      // Add new images to existing images instead of replacing them
       setFiles(prevFiles => [...prevFiles, ...resizedFiles]);
       setPreviewUrls(prevPreviews => [...prevPreviews, ...previews]);
       setMessage("");
@@ -211,13 +225,13 @@ export default function AddProduct() {
       setMessage("Error processing images: " + error.message);
     } finally {
       setUploadingImages(false);
-      // إعادة تعيين قيمة input لتمكين اختيار نفس الملفات مرة أخرى
+      // Reset input value to allow selecting same files again
       e.target.value = '';
     }
   };
 
   const removeImage = (indexToRemove) => {
-    // إزالة URL من الذاكرة لتجنب memory leaks
+    // Remove URL from memory to avoid memory leaks
     URL.revokeObjectURL(previewUrls[indexToRemove]);
     
     setFiles(prevFiles => prevFiles.filter((_, index) => index !== indexToRemove));
@@ -233,7 +247,7 @@ export default function AddProduct() {
         const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
 
         const { data, error } = await supabase.storage
-          .from("product-images") // تغيير اسم bucket ليتطابق مع Manage Products
+          .from("product-images")
           .upload(fileName, file, {
             cacheControl: '3600',
             upsert: false
@@ -243,27 +257,19 @@ export default function AddProduct() {
           console.error('Upload error for', file.name, ':', error);
           
           if (error.message.includes('Bucket not found')) {
-            setMessage('❌ Storage bucket "product-images" not found. Please create it manually in Supabase Dashboard: Storage > Create Bucket > Name: "product-images" > Public: ✅');
+            setMessage('Storage bucket "product-images" not found. Please create it manually in Supabase Dashboard');
             setTimeout(() => setMessage(""), 10000);
             break;
           } else if (error.message.includes('row-level security') || error.message.includes('RLS')) {
-            setMessage('🔒 RLS Policy Error: Please run the SQL commands to fix storage policies. Check console for details.');
-            console.error('RLS Error - Run this SQL in Supabase:', `
-              ALTER TABLE storage.objects DISABLE ROW LEVEL SECURITY;
-              -- OR create proper policies:
-              ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
-              CREATE POLICY "Allow public upload" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product-images');
-              CREATE POLICY "Allow public read" ON storage.objects FOR SELECT USING (bucket_id = 'product-images');
-              CREATE POLICY "Allow public delete" ON storage.objects FOR DELETE USING (bucket_id = 'product-images');
-            `);
+            setMessage('RLS Policy Error: Please run the SQL commands to fix storage policies');
             setTimeout(() => setMessage(""), 15000);
             break;
           } else if (error.message.includes('permission') || error.message.includes('denied')) {
-            setMessage('🚫 Permission denied. Please check your Supabase storage policies and make bucket public.');
+            setMessage('Permission denied. Please check your Supabase storage policies');
             setTimeout(() => setMessage(""), 8000);
             break;
           } else {
-            setMessage(`❌ Error uploading ${file.name}: ${error.message}`);
+            setMessage(`Error uploading ${file.name}: ${error.message}`);
             setTimeout(() => setMessage(""), 5000);
           }
           continue;
@@ -331,15 +337,15 @@ export default function AddProduct() {
       const result = await res.json();
 
       if (res.ok) {
-        setMessage("✅ Product added successfully!");
+        setMessage("Product added successfully!");
         
-        // تنظيف URLs من الذاكرة لتجنب memory leaks
+        // Clean URLs from memory to avoid memory leaks
         previewUrls.forEach(url => URL.revokeObjectURL(url));
         
         // Reset form
         setName("");
         setPrice("");
-        setnewprice("");
+        setNewprice("");
         setDescription("");
         setFiles([]);
         setPreviewUrls([]);
@@ -353,14 +359,13 @@ export default function AddProduct() {
         
         setTimeout(() => setMessage(""), 5000);
       } else {
-        setMessage("❌ " + (result.error || "Error adding product"));
+        setMessage("Error: " + (result.error || "Error adding product"));
         setTimeout(() => setMessage(""), 5000);
       }
 
-
     } catch (err) {
       console.error(err);
-      setMessage("❌ " + err.message);
+      setMessage("Error: " + err.message);
       setTimeout(() => setMessage(""), 5000);
     }
 
@@ -418,7 +423,7 @@ export default function AddProduct() {
         type="number" 
         placeholder="New Price (optional)" 
         value={newprice} 
-        onChange={(e) => setnewprice(e.target.value)} 
+        onChange={(e) => setNewprice(e.target.value)} 
         className="p-2 border rounded-md w-full" 
         variants={inputVariants}
         whileFocus={{
@@ -561,11 +566,12 @@ export default function AddProduct() {
                 Processing Images...
               </span>
             ) : (
-              '📁 Select Images (Required)'
+              'Select Images (Required)'
             )}
           </label>
           <p className="text-xs text-gray-500 mt-2">
             Select multiple images (Max 5MB each)<br />
+            Images will be resized to 768x950px automatically<br />
             You can add more images by selecting again
           </p>
         </div>
