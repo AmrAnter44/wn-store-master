@@ -24,7 +24,7 @@ export default function LoginPage() {
       setError(error.message);
       console.error("Login error:", error.message);
     } else if (data?.session) {
-      console.log("✅ Login success:", data);
+
  router.push("/admin/dashboard");
  router.replace("/admin/dashboard");
 

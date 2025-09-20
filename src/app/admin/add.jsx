@@ -357,7 +357,7 @@ export default function AddProduct() {
         setTimeout(() => setMessage(""), 5000);
       }
 
-      console.log("Response:", result);
+
     } catch (err) {
       console.error(err);
       setMessage("❌ " + err.message);

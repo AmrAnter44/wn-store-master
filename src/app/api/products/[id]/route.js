@@ -35,7 +35,7 @@ export async function PUT(req, { params }) {
     const { id } = params;
     const body = await req.json();
 
-    console.log("Updating product:", id, body);
+
 
     const { data, error } = await supabaseServer()
       .from("products")
@@ -75,7 +75,7 @@ export async function DELETE(req, { params }) {
   try {
     const { id } = params;
 
-    console.log("Deleting product with ID:", id);
+
 
     if (!id) {
       return NextResponse.json(
@@ -115,7 +115,7 @@ export async function DELETE(req, { params }) {
           if (storageError) {
             console.error("Error deleting images:", storageError);
           } else {
-            console.log("Images deleted successfully:", imageUrls);
+
           }
         }
       } catch (storageError) {
@@ -136,7 +136,6 @@ export async function DELETE(req, { params }) {
       );
     }
 
-    console.log("Product deleted successfully");
 
     return NextResponse.json(
       { success: true, message: "Product deleted successfully" },

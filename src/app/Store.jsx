@@ -153,9 +153,7 @@ export default function StorePage() {
     return Math.round(((originalPrice - salePrice) / originalPrice) * 100);
   };
 
-  console.log("Available product types:", products.map(p => p.type));
-  console.log("Categories:", categories);
-  console.log("Sale products:", saleProducts.length);
+
 
   // Enhanced filtering and sorting
   const filteredProducts = products
