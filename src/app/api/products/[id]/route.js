@@ -5,8 +5,8 @@ import { NextResponse } from "next/server";
 
 export async function GET(req, { params }) {
   try {
-    const { id } = await params;
-    
+    const { id } = params;
+
     const { data, error } = await supabaseServer()
       .from("products")
       .select("*")
@@ -15,7 +15,7 @@ export async function GET(req, { params }) {
 
     if (error) {
       return NextResponse.json(
-        { error: "Product not found: " + error.message }, 
+        { error: "Product not found: " + error.message },
         { status: 404 }
       );
     }
@@ -24,7 +24,7 @@ export async function GET(req, { params }) {
   } catch (error) {
     console.error("GET error:", error);
     return NextResponse.json(
-      { error: "Internal server error: " + error.message }, 
+      { error: "Internal server error: " + error.message },
       { status: 500 }
     );
   }
@@ -32,12 +32,11 @@ export async function GET(req, { params }) {
 
 export async function PUT(req, { params }) {
   try {
-    const { id } = await params;
+    const { id } = params;
     const body = await req.json();
-    
+
     console.log("Updating product:", id, body);
 
-    // Update product in database
     const { data, error } = await supabaseServer()
       .from("products")
       .update({
@@ -45,7 +44,10 @@ export async function PUT(req, { params }) {
         price: body.price,
         newprice: body.newprice || null,
         colors: body.colors || [],
-        pictures: body.pictures || [] // تحديث الصور
+        sizes: body.sizes || [],
+        type: body.type || null,
+        description: body.description || "",
+        pictures: body.pictures || []
       })
       .eq("id", id)
       .select()
@@ -54,7 +56,7 @@ export async function PUT(req, { params }) {
     if (error) {
       console.error("Supabase update error:", error);
       return NextResponse.json(
-        { error: "Failed to update product: " + error.message }, 
+        { error: "Failed to update product: " + error.message },
         { status: 500 }
       );
     }
@@ -63,7 +65,7 @@ export async function PUT(req, { params }) {
   } catch (error) {
     console.error("PUT error:", error);
     return NextResponse.json(
-      { error: "Internal server error: " + error.message }, 
+      { error: "Internal server error: " + error.message },
       { status: 500 }
     );
   }
@@ -71,61 +73,57 @@ export async function PUT(req, { params }) {
 
 export async function DELETE(req, { params }) {
   try {
-    const { id } = await params;
-    
+    const { id } = params;
+
     console.log("Deleting product with ID:", id);
-    
+
     if (!id) {
       return NextResponse.json(
-        { error: "Product ID is required" }, 
+        { error: "Product ID is required" },
         { status: 400 }
       );
     }
 
-    // Get product first to access images for deletion
     const { data: product, error: fetchError } = await supabaseServer()
       .from("products")
       .select("pictures")
       .eq("id", id)
       .single();
 
-    if (fetchError && fetchError.code !== 'PGRST116') {
+    if (fetchError && fetchError.code !== "PGRST116") {
       console.error("Error fetching product:", fetchError);
     }
 
-    // Delete images from storage if they exist
     if (product?.pictures && product.pictures.length > 0) {
       try {
-        const imageUrls = product.pictures.map(url => {
-          // Extract file path from Supabase URL
-          if (url.includes('/product-images/')) {
-            const urlParts = url.split('/product-images/');
-            return urlParts[urlParts.length - 1];
-          }
-          return null;
-        }).filter(Boolean);
+        const imageUrls = product.pictures
+          .map((url) => {
+            if (url.includes("/product-images/")) {
+              const urlParts = url.split("/product-images/");
+              return urlParts[urlParts.length - 1];
+            }
+            return null;
+          })
+          .filter(Boolean);
 
         if (imageUrls.length > 0) {
           const { error: storageError } = await supabaseServer()
             .storage
-            .from('product-images')
+            .from("product-images")
             .remove(imageUrls);
 
           if (storageError) {
             console.error("Error deleting images:", storageError);
-            // Don't fail the whole operation if image deletion fails
           } else {
             console.log("Images deleted successfully:", imageUrls);
           }
         }
       } catch (storageError) {
         console.error("Storage deletion error:", storageError);
-        // Continue with product deletion even if image deletion fails
       }
     }
 
-    // Delete product from database
-    const { data, error } = await supabaseServer()
+    const { error } = await supabaseServer()
       .from("products")
       .delete()
       .eq("id", id);
@@ -133,22 +131,21 @@ export async function DELETE(req, { params }) {
     if (error) {
       console.error("Supabase delete error:", error);
       return NextResponse.json(
-        { error: "Failed to delete product: " + error.message }, 
+        { error: "Failed to delete product: " + error.message },
         { status: 500 }
       );
     }
 
     console.log("Product deleted successfully");
-    
+
     return NextResponse.json(
-      { success: true, message: "Product deleted successfully" }, 
+      { success: true, message: "Product deleted successfully" },
       { status: 200 }
     );
-
   } catch (error) {
     console.error("DELETE error:", error);
     return NextResponse.json(
-      { error: "Internal server error: " + error.message }, 
+      { error: "Internal server error: " + error.message },
       { status: 500 }
     );
   }
