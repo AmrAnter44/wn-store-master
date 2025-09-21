@@ -100,25 +100,25 @@ export default function StorePage() {
     
     const categoryMapping = {
       "casual": {
-        name: "Casual",
-        description: "Comfortable & stylish everyday outfits",
+        name: "casual",
+        description: "",
 
         emoji: "",
-        image: "../../casual.png"
+        image: "/casual.png"
       },
       "dress": {
-        name: "Dresses", 
-        description: "Elegant dresses for every occasion",
+        name: "dress", 
+        description: "",
 
         emoji: "",
-        image: "../../dress.png"
+        image: "/dress.png"
       },
       "bag": {
-        name: "Bags",
-        description: "Trendy bags and accessories", 
+        name: "bag",
+        description: "", 
 
         emoji: "",
-        image: "../../bag.png"
+        image: "/bag.png"
       }
     };
 
@@ -126,9 +126,9 @@ export default function StorePage() {
     return uniqueTypes.map(type => {
       const mapping = categoryMapping[type] || {
         name: type.charAt(0).toUpperCase() + type.slice(1),
-        description: `Explore our ${type} collection`,
+        description: ``,
         bgColor: "from-gray-400 to-gray-600",
-        emoji: "🛍️",
+        emoji: "",
         image: `/${type}.png`
       };
       
