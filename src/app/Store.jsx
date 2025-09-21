@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaFilter, FaFilterCircleXmark, FaSpinner, FaFire } from "react-icons/fa6";
 import { supabase } from "@/lib/supabaseClient";
 import { useMyContext } from "../context/CartContext";
-
+import Fotter from "../app/Footer";  
 // Simplified Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -104,21 +104,21 @@ export default function StorePage() {
         description: "Comfortable & stylish everyday outfits",
 
         emoji: "",
-        image: "/casual.png"
+        image: "../../casual.png"
       },
       "dress": {
         name: "Dresses", 
         description: "Elegant dresses for every occasion",
 
         emoji: "",
-        image: "/dress.png"
+        image: "../../dress.png"
       },
       "bag": {
         name: "Bags",
         description: "Trendy bags and accessories", 
 
         emoji: "",
-        image: "/bag.png"
+        image: "../../bag.png"
       }
     };
 

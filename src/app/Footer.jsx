@@ -48,9 +48,9 @@ export default function Footer() {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
-      className="bg text-white p-6 mt-10"
+      className="bg text-white p-6 mt-10 z-50"
     >
-      <div className="container mx-auto flex flex-col md:flex-row items-center justify-between">
+      <div className="container mx-auto flex flex-col md:flex-row items-center justify-between z-50">
         
         <motion.div 
           variants={itemVariants}
