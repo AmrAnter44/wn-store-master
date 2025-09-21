@@ -129,7 +129,7 @@ export default function StorePage() {
         description: ``,
         bgColor: "from-gray-400 to-gray-600",
         emoji: "",
-        image: `/${type}.png`
+        image: type.image ? type.image : ""
       };
       
       return {
