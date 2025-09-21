@@ -104,14 +104,14 @@ export default function StorePage() {
         description: "",
 
         emoji: "",
-        image: "/casual.png"
+        image: "https://dfurfmrwpyotjfrryatn.supabase.co/storage/v1/object/public/product-images/casual.png"
       },
       "dress": {
         name: "dress", 
         description: "",
 
         emoji: "",
-        image: "/dress.png"
+        image: "https://dfurfmrwpyotjfrryatn.supabase.co/storage/v1/object/public/product-images/dress.png"
       },
       "bag": {
         name: "bag",
