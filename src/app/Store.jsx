@@ -118,7 +118,7 @@ export default function StorePage() {
         description: "", 
 
         emoji: "",
-        image: "/bag.png"
+        image: "https://dfurfmrwpyotjfrryatn.supabase.co/storage/v1/object/public/product-images/bag.png"
       }
     };
 
