@@ -57,7 +57,7 @@ export default function Footer() {
         
         <motion.div 
           variants={itemVariants}
-          className="text-lg font-semibold mb-4 md:mb-0 text-gray-800"
+          className="text-lg font-semibold mb-4 md:mb-0 text-white"
         >
           © {new Date().getFullYear()} Wn store
         </motion.div>

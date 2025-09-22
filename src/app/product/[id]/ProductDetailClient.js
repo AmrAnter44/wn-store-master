@@ -143,7 +143,7 @@ export default function ProductDetailClient({ productId }) {
         animate="visible"
       >
         <motion.div 
-          className="p-6 flex flex-col lg:flex-row gap-8 bg-white rounded-2xl shadow-sm"
+          className="p-6 flex flex-col lg:flex-row gap-8  rounded-2xl "
           variants={itemVariants}
         >
           {/* صور المنتج */}

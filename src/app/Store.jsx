@@ -260,7 +260,7 @@ export default function StorePage() {
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="flex flex-col justify-center items-center min-h-screen bg-gray-50"
+        className="flex flex-col justify-center items-center min-h-screen "
       >
         <FaSpinner className="animate-spin text-4xl text-gray-400 mb-4" />
         <p className="text-gray-600">Loading products...</p>
@@ -273,7 +273,7 @@ export default function StorePage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-gray-50"
+      className="min-h-screen "
     >
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
@@ -322,7 +322,7 @@ export default function StorePage() {
               variants={saleVariants}
               className="text-center mb-8"
             >
-              <div className="inline-flex items-center gap-3 bg-gradient-to-r from-fuchsia-500 to-fuchsia-800 text-white px-6 py-3 rounded-full mb-4">
+              <div className="inline-flex items-center gap-3 bg text-white px-6 py-3 rounded-full mb-4">
                 <FaFire className="text-xl" />
                 <span className="text-lg font-bold">SALE UP TO 50% OFF</span>
                 <FaFire className="text-xl" />
@@ -333,69 +333,63 @@ export default function StorePage() {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {saleProducts.slice(0, 4).map((product, index) => (
-                <motion.div
-                  key={`sale-${product.id}`}
-                  variants={itemVariants}
-                  whileHover={{ y: -4, scale: 1.02 }}
-                  className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 relative"
-                  onMouseEnter={() => setHoveredId(`sale-${product.id}`)}
-                  onMouseLeave={() => setHoveredId(null)}
-                >
-                  {/* Hot Deal Badge */}
-                  <div className="absolute top-3 left-3 bg-gradient-to-r from-fuchsia-500 to-fuchsia-800 text-white px-3 py-1 rounded-full text-xs font-bold z-10 flex items-center gap-1">
-                    <FaFire className="text-xs" />
-                    {getDiscountPercentage(product.price, product.newprice)}% OFF
-                  </div>
+                <Link href={`/product/${product.id}`} key={`sale-${product.id}`}>
+                  <motion.div
+                    variants={itemVariants}
+                    whileHover={{ y: -4, scale: 1.02 }}
+                    className="group  rounded-xl overflow-hidden  hover:shadow-xl transition-all duration-300 relative cursor-pointer"
+                    onMouseEnter={() => setHoveredId(`sale-${product.id}`)}
+                    onMouseLeave={() => setHoveredId(null)}
+                  >
+                    {/* Hot Deal Badge */}
+                    <div className="absolute top-3 left-3 bg text-white px-3 py-1 rounded-full text-xs font-bold z-10 flex items-center gap-1">
+                      <FaFire className="text-xs" />
+                      {getDiscountPercentage(product.price, product.newprice)}% OFF
+                    </div>
 
-                  {/* Image Container */}
-                  <div className="relative overflow-hidden bg-gray-50 h-64">
-                    <Link href={`/product/${product.id}`}>
+                    {/* Image Container */}
+                    <div className="relative overflow-hidden bg-gray-50 h-64">
                       <ProductImage
                         product={product}
                         hoveredId={hoveredId}
                         className="object-cover transition-transform duration-500 group-hover:scale-110"
                         priority={index < 2}
                       />
-                    </Link>
-                    
-                    {/* Gradient Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  </div>
-
-                  {/* Product Info */}
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 text-sm">
-                      {product.name}
-                    </h3>
-                    
-                    {/* Price */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-lg font-bold text-fuchsia-500">
-                        {product.newprice} LE
-                      </span>
-                      <span className="text-sm text-gray-500 line-through">
-                        {product.price} LE
-                      </span>
+                      
+                      {/* Gradient Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </div>
 
-                    {/* CTA Button */}
-                    <Link href={`/product/${product.id}`}>
-                      <button 
-                        className="w-full bg-gradient-to-r from-fuchsia-500 to-fuchsia-800 text-white py-2 rounded-lg hover:from-fuchsia-600 hover:to-fuchsia-600 transition-all text-sm font-medium"
-                        aria-label={`Shop ${product.name} now`}
-                      >
+                    {/* Product Info */}
+                    <div className="p-4">
+                      <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 text-sm">
+                        {product.name}
+                      </h3>
+                      
+                      {/* Price */}
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-lg font-bold text">
+                          {product.newprice} LE
+                        </span>
+                        <span className="text-sm text-gray-500 line-through">
+                          {product.price} LE
+                        </span>
+                      </div>
+
+                      {/* Shop Now Label */}
+                      <div className="w-full bg text-white py-2 rounded-lg text-center text-sm font-medium group-hover:from-fuchsia-600 group-hover:to-fuchsia-600 transition-all">
                         Shop Now
-                      </button>
-                    </Link>
-                  </div>
-                </motion.div>
+                      </div>
+                    </div>
+                  </motion.div>
+                </Link>
               ))}
             </div>
 
             {saleProducts.length > 4 && (
               <div className="text-center mt-8">
                 <Link href="/sale">
-                  <button className="bg-gradient-to-r from-fuchsia-500 to-fuchsia-800 text-white px-8 py-3 rounded-full hover:from-fuchsia-600 hover:to-fuchsia-600 transition-all font-medium">
+                  <button className="bg text-white px-8 py-3 rounded-full hover:from-fuchsia-600 hover:to-fuchsia-600 transition-all font-medium">
                     View All Sale Items ({saleProducts.length})
                   </button>
                 </Link>
@@ -627,101 +621,90 @@ export default function StorePage() {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           >
             {filteredProducts.map((product, index) => (
-              <motion.div
-                key={product.id}
-                variants={itemVariants}
-                whileHover={{ y: -4 }}
-                className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
-                onMouseEnter={() => setHoveredId(product.id)}
-                onMouseLeave={() => setHoveredId(null)}
-              >
-                {/* Image Container */}
-                <div className="relative overflow-hidden bg-gray-50 h-64">
-                  <Link href={`/product/${product.id}`}>
+              <Link href={`/product/${product.id}`} key={product.id}>
+                <motion.div
+                  variants={itemVariants}
+                  whileHover={{ y: -4 }}
+                  className="group  rounded-xl overflow-hidden  hover:shadow-lg transition-all duration-300 cursor-pointer"
+                  onMouseEnter={() => setHoveredId(product.id)}
+                  onMouseLeave={() => setHoveredId(null)}
+                >
+                  {/* Image Container */}
+                  <div className="relative overflow-hidden bg-gray-50 h-64">
                     <ProductImage
                       product={product}
                       hoveredId={hoveredId}
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                       priority={index < 8}
                     />
-                  </Link>
 
-                  {/* Sale Badge */}
-                  {product.newprice && (
-                    <div className="absolute top-3 left-3 bg-fuchsia-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-                      SALE
-                    </div>
-                  )}
-
-                  {/* Color Dots */}
-                  {product.colors?.length > 1 && (
-                    <div className="absolute bottom-3 right-3 flex gap-1">
-                      {product.colors.slice(0, 4).map((color, idx) => (
-                        <div
-                          key={idx}
-                          className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
-                          style={{ backgroundColor: color }}
-                        />
-                      ))}
-                      {product.colors.length > 4 && (
-                        <div className="w-4 h-4 rounded-full bg-gray-600 border-2 border-white shadow-sm flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">+</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Product Info */}
-                <div className="p-5">
-                  <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
-                    {product.name}
-                  </h3>
-                  
-                  {/* Price */}
-                  <div className="flex items-center justify-between mb-4">
-                    {product.newprice ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg font-semibold text-gray-900">
-                          {product.newprice} LE
-                        </span>
-                        <span className="text-sm text-gray-500 line-through">
-                          {product.price} LE
-                        </span>
+                    {/* Sale Badge */}
+                    {product.newprice && (
+                      <div className="absolute top-3 left-3 bg text-white px-3 py-1 rounded-full text-xs font-bold">
+                        SALE
                       </div>
-                    ) : (
-                      <span className="text-lg font-semibold text-gray-900">
-                        {product.price} LE
-                      </span>
+                    )}
+
+                    {/* Color Dots */}
+                    {product.colors?.length > 1 && (
+                      <div className="absolute bottom-3 right-3 flex gap-1">
+                        {product.colors.slice(0, 4).map((color, idx) => (
+                          <div
+                            key={idx}
+                            className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
+                            style={{ backgroundColor: color }}
+                          />
+                        ))}
+                        {product.colors.length > 4 && (
+                          <div className="w-4 h-4 rounded-full bg-gray-600 border-2 border-white shadow-sm flex items-center justify-center">
+                            <span className="text-white text-xs font-bold">+</span>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
 
-                  {/* Available Sizes */}
-                  {product.sizes && product.sizes.length > 0 && (
-                    <div className="flex gap-1 mb-4">
-                      <span className="text-xs text-gray-500 mr-2">Sizes:</span>
-                      {product.sizes.slice(0, 4).map((size, idx) => (
-                        <span
-                          key={idx}
-                          className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded font-medium"
-                        >
-                          {size}
+                  {/* Product Info */}
+                  <div className="p-5">
+                    <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
+                      {product.name}
+                    </h3>
+                    
+                    {/* Price */}
+                    <div className="flex items-center justify-between mb-4">
+                      {product.newprice ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg font-semibold text-gray-900">
+                            {product.newprice} LE
+                          </span>
+                          <span className="text-sm text-gray-500 line-through">
+                            {product.price} LE
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-lg font-semibold text-gray-900">
+                          {product.price} LE
                         </span>
-                      ))}
+                      )}
                     </div>
-                  )}
 
-                  {/* CTA Button */}
-                  <Link href={`/product/${product.id}`}>
-                    <button 
-                      className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
-                      aria-label={`View details for ${product.name}`}
-                    >
-                      View Details
-                    </button>
-                  </Link>
-                </div>
-              </motion.div>
+                    {/* Available Sizes */}
+                    {product.sizes && product.sizes.length > 0 && (
+                      <div className="flex gap-1 mb-4">
+                        <span className="text-xs text-gray-500 mr-2">Sizes:</span>
+                        {product.sizes.slice(0, 4).map((size, idx) => (
+                          <span
+                            key={idx}
+                            className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded font-medium"
+                          >
+                            {size}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              </Link>
             ))}
           </motion.div>
 
