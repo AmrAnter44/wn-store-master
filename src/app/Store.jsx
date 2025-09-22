@@ -1,12 +1,13 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaFilter, FaFilterCircleXmark, FaSpinner, FaFire } from "react-icons/fa6";
 import { supabase } from "@/lib/supabaseClient";
 import { useMyContext } from "../context/CartContext";
-import Fotter from "../app/Footer";  
+import Fotter from "../app/Footer";
+
 // Simplified Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -57,6 +58,65 @@ const saleVariants = {
   }
 };
 
+// Category Image Component with Supabase fallback
+const CategoryImage = ({ src, alt, className }) => {
+  const [imageSrc, setImageSrc] = useState(src);
+  const [imageError, setImageError] = useState(false);
+
+  const handleError = () => {
+    if (!imageError) {
+      setImageError(true);
+      // Use your Supabase casual image as fallback
+      setImageSrc('https://dfurfmrwpyotjfrryatn.supabase.co/storage/v1/object/public/product-images/casual.png');
+    }
+  };
+
+  return (
+    <Image
+      src={imageSrc}
+      alt={alt}
+      fill
+      className={className}
+      onError={handleError}
+      sizes="(max-width: 768px) 100vw, 33vw"
+    />
+  );
+};
+
+// Product Image Component with Supabase fallback
+const ProductImage = ({ product, hoveredId, className, priority = false }) => {
+  const [imageSrc, setImageSrc] = useState(
+    hoveredId === product.id
+      ? product.pictures?.[1] || product.pictures?.[0] || "/placeholder.png"
+      : product.pictures?.[0] || "/placeholder.png"
+  );
+
+  useEffect(() => {
+    setImageSrc(
+      hoveredId === product.id
+        ? product.pictures?.[1] || product.pictures?.[0] || "/placeholder.png"
+        : product.pictures?.[0] || "/placeholder.png"
+    );
+  }, [hoveredId, product]);
+
+  const handleError = () => {
+    // Use your Supabase casual image as fallback for products too
+    setImageSrc('https://dfurfmrwpyotjfrryatn.supabase.co/storage/v1/object/public/product-images/casual.png');
+  };
+
+  return (
+    <Image
+      src={imageSrc}
+      alt={product.name}
+      fill
+      className={className}
+      onError={handleError}
+      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+      priority={priority}
+    />
+  );
+};
+
 export default function StorePage() {
   const { addToCart } = useMyContext();
   
@@ -83,9 +143,10 @@ export default function StorePage() {
           .order("id", { ascending: true });
           
         if (error) throw error;
-        setProducts(data);
+        setProducts(data || []);
       } catch (error) {
         console.error("Error fetching products:", error);
+        setProducts([]);
       } finally {
         setLoading(false);
       }
@@ -100,36 +161,33 @@ export default function StorePage() {
     
     const categoryMapping = {
       "casual": {
-        name: "casual",
+        name: "Casual",
         description: "",
-
         emoji: "",
         image: "https://dfurfmrwpyotjfrryatn.supabase.co/storage/v1/object/public/product-images/casual.png"
       },
       "dress": {
-        name: "dress", 
+        name: "Dresses", 
         description: "",
-
         emoji: "",
         image: "https://dfurfmrwpyotjfrryatn.supabase.co/storage/v1/object/public/product-images/dress.png"
       },
       "bag": {
-        name: "bag",
+        name: "Bags",
         description: "", 
-
         emoji: "",
         image: "https://dfurfmrwpyotjfrryatn.supabase.co/storage/v1/object/public/product-images/bag.png"
-      }
+      },
+
     };
 
     // Map existing types to category data
     return uniqueTypes.map(type => {
-      const mapping = categoryMapping[type] || {
+      const mapping = categoryMapping[type.toLowerCase()] || {
         name: type.charAt(0).toUpperCase() + type.slice(1),
-        description: ``,
-        bgColor: "from-gray-400 to-gray-600",
-        emoji: "",
-        image: type.image ? type.image : ""
+        description: `Discover our ${type} collection`,
+        emoji: "🛍️",
+        image: "https://dfurfmrwpyotjfrryatn.supabase.co/storage/v1/object/public/product-images/casual.png" // Fallback to casual image
       };
       
       return {
@@ -139,46 +197,45 @@ export default function StorePage() {
     });
   };
 
-  const categories = getAllProductTypes();
+  // Memoize expensive calculations
+  const categories = useMemo(() => getAllProductTypes(), [products]);
 
   // Get sale products (products with newprice)
-  const getSaleProducts = () => {
+  const saleProducts = useMemo(() => {
     return products.filter(product => product.newprice && product.newprice > 0);
-  };
-
-  const saleProducts = getSaleProducts();
+  }, [products]);
 
   // Calculate discount percentage
   const getDiscountPercentage = (originalPrice, salePrice) => {
     return Math.round(((originalPrice - salePrice) / originalPrice) * 100);
   };
 
-
-
-  // Enhanced filtering and sorting
-  const filteredProducts = products
-    .filter((product) => {
-      return (
-        (!typeFilter || product.type === typeFilter) &&
-        (!colorFilter || product.colors?.includes(colorFilter)) &&
-        (!sizeFilter || product.sizes?.includes(sizeFilter)) &&
-        (!minPrice || product.price >= parseFloat(minPrice)) &&
-        (!maxPrice || product.price <= parseFloat(maxPrice)) &&
-        (!searchTerm || product.name.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "price-low":
-          return (a.newprice || a.price) - (b.newprice || b.price);
-        case "price-high":
-          return (b.newprice || b.price) - (a.newprice || a.price);
-        case "name":
-          return a.name.localeCompare(b.name);
-        default:
-          return b.id - a.id; // newest first
-      }
-    });
+  // Enhanced filtering and sorting with memoization
+  const filteredProducts = useMemo(() => {
+    return products
+      .filter((product) => {
+        return (
+          (!typeFilter || product.type === typeFilter) &&
+          (!colorFilter || product.colors?.includes(colorFilter)) &&
+          (!sizeFilter || product.sizes?.includes(sizeFilter)) &&
+          (!minPrice || product.price >= parseFloat(minPrice)) &&
+          (!maxPrice || product.price <= parseFloat(maxPrice)) &&
+          (!searchTerm || product.name.toLowerCase().includes(searchTerm.toLowerCase()))
+        );
+      })
+      .sort((a, b) => {
+        switch (sortBy) {
+          case "price-low":
+            return (a.newprice || a.price) - (b.newprice || b.price);
+          case "price-high":
+            return (b.newprice || b.price) - (a.newprice || a.price);
+          case "name":
+            return a.name.localeCompare(b.name);
+          default:
+            return b.id - a.id; // newest first
+        }
+      });
+  }, [products, typeFilter, colorFilter, sizeFilter, minPrice, maxPrice, searchTerm, sortBy]);
 
   const clearAllFilters = () => {
     setTypeFilter("");
@@ -285,7 +342,7 @@ export default function StorePage() {
                   onMouseLeave={() => setHoveredId(null)}
                 >
                   {/* Hot Deal Badge */}
-                  <div className="absolute top-3 left-3 bg-gradient-to-r from-fuchsia-500 to-fuchsia-8 text-white px-3 py-1 rounded-full text-xs font-bold z-10 flex items-center gap-1">
+                  <div className="absolute top-3 left-3 bg-gradient-to-r from-fuchsia-500 to-fuchsia-800 text-white px-3 py-1 rounded-full text-xs font-bold z-10 flex items-center gap-1">
                     <FaFire className="text-xs" />
                     {getDiscountPercentage(product.price, product.newprice)}% OFF
                   </div>
@@ -293,16 +350,11 @@ export default function StorePage() {
                   {/* Image Container */}
                   <div className="relative overflow-hidden bg-gray-50 h-64">
                     <Link href={`/product/${product.id}`}>
-                      <Image
-                        src={
-                          hoveredId === `sale-${product.id}`
-                            ? product.pictures?.[1] || product.pictures?.[0] || "/placeholder.png"
-                            : product.pictures?.[0] || "/placeholder.png"
-                        }
-                        alt={product.name}
-                        fill
+                      <ProductImage
+                        product={product}
+                        hoveredId={hoveredId}
                         className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        priority={index < 2}
                       />
                     </Link>
                     
@@ -328,7 +380,10 @@ export default function StorePage() {
 
                     {/* CTA Button */}
                     <Link href={`/product/${product.id}`}>
-                      <button className="w-full bg-gradient-to-r from-fuchsia-500 to-fuchsia-800 text-white py-2 rounded-lg hover:from-fuchsia-600 hover:to-fuchsia-600 transition-all text-sm font-medium">
+                      <button 
+                        className="w-full bg-gradient-to-r from-fuchsia-500 to-fuchsia-800 text-white py-2 rounded-lg hover:from-fuchsia-600 hover:to-fuchsia-600 transition-all text-sm font-medium"
+                        aria-label={`Shop ${product.name} now`}
+                      >
                         Shop Now
                       </button>
                     </Link>
@@ -373,20 +428,14 @@ export default function StorePage() {
                 >
                   {/* Background Image */}
                   <div className="relative h-80 overflow-hidden">
-                    <Image
+                    <CategoryImage
                       src={category.image}
                       alt={category.name}
-                      fill
                       className="object-cover transition-transform duration-700 group-hover:scale-110"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                      onError={(e) => {
-                        // Fallback to gradient background if image fails to load
-                        e.target.style.display = 'none';
-                      }}
                     />
                     
                     {/* Gradient Overlays */}
-                    <div className={`absolute inset-0 bg-gray-900/70 opacity-80`} />
+                    <div className="absolute inset-0 bg-gray-900/30 opacity-80" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
                     
@@ -398,11 +447,7 @@ export default function StorePage() {
                         </div>
                         <h3 className="text-2xl font-bold mb-2 filter drop-shadow-md">{category.name}</h3>
                         <p className="text-sm opacity-90 mb-4 filter drop-shadow-sm">{category.description}</p>
-                        <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 inline-block border border-white/30">
-                          <span className="text-sm font-medium">
-                            {categoryProducts.length} Products
-                          </span>
-                        </div>
+
                       </div>
                     </div>
                     
@@ -424,6 +469,11 @@ export default function StorePage() {
 
         {/* Products Section */}
         <div id="products-section">
+          {/* Skip link for accessibility */}
+          <a href="#products-section" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-black text-white px-4 py-2 rounded">
+            Skip to products
+          </a>
+
           {/* Filters */}
           <motion.div 
             initial={{ opacity: 0 }}
@@ -443,6 +493,7 @@ export default function StorePage() {
                   <button
                     onClick={() => setTypeFilter("")}
                     className="text-gray-500 hover:text-gray-700 text-sm"
+                    aria-label="Clear category filter"
                   >
                     Clear Category
                   </button>
@@ -457,6 +508,7 @@ export default function StorePage() {
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-black"
+                aria-label="Sort products"
               >
                 <option value="newest">Newest First</option>
                 <option value="price-low">Price: Low to High</option>
@@ -469,6 +521,7 @@ export default function StorePage() {
                 <button
                   className="px-6 py-3 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all"
                   onClick={clearAllFilters}
+                  aria-label="Clear all filters"
                 >
                   Clear All
                 </button>
@@ -476,6 +529,7 @@ export default function StorePage() {
                 <button
                   className="p-3 rounded-full hover:bg-gray-100 transition-colors"
                   onClick={() => setShowFilters(!showFilters)}
+                  aria-label={showFilters ? "Hide filters" : "Show filters"}
                 >
                   {showFilters ? 
                     <FaFilterCircleXmark className="w-5 h-5" /> : 
@@ -500,6 +554,7 @@ export default function StorePage() {
                       value={colorFilter}
                       onChange={(e) => setColorFilter(e.target.value)}
                       className="px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                      aria-label="Filter by color"
                     >
                       <option value="">All Colors</option>
                       <option value="black">Black</option>
@@ -512,6 +567,7 @@ export default function StorePage() {
                       value={sizeFilter}
                       onChange={(e) => setSizeFilter(e.target.value)}
                       className="px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                      aria-label="Filter by size"
                     >
                       <option value="">All Sizes</option>
                       <option value="S">Small</option>
@@ -528,6 +584,7 @@ export default function StorePage() {
                         value={minPrice}
                         onChange={(e) => setMinPrice(e.target.value)}
                         className="w-24 px-3 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        aria-label="Minimum price"
                       />
                       <span className="text-gray-500">—</span>
                       <input
@@ -536,6 +593,7 @@ export default function StorePage() {
                         value={maxPrice}
                         onChange={(e) => setMaxPrice(e.target.value)}
                         className="w-24 px-3 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        aria-label="Maximum price"
                       />
                     </div>
                   </div>
@@ -580,16 +638,10 @@ export default function StorePage() {
                 {/* Image Container */}
                 <div className="relative overflow-hidden bg-gray-50 h-64">
                   <Link href={`/product/${product.id}`}>
-                    <Image
-                      src={
-                        hoveredId === product.id
-                          ? product.pictures?.[1] || product.pictures?.[0] || "/placeholder.png"
-                          : product.pictures?.[0] || "/placeholder.png"
-                      }
-                      alt={product.name}
-                      fill
+                    <ProductImage
+                      product={product}
+                      hoveredId={hoveredId}
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                       priority={index < 8}
                     />
                   </Link>
@@ -661,7 +713,10 @@ export default function StorePage() {
 
                   {/* CTA Button */}
                   <Link href={`/product/${product.id}`}>
-                    <button className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium">
+                    <button 
+                      className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+                      aria-label={`View details for ${product.name}`}
+                    >
                       View Details
                     </button>
                   </Link>
@@ -686,6 +741,7 @@ export default function StorePage() {
           )}
         </div>
       </div>
+
     </motion.div>
   );
 }

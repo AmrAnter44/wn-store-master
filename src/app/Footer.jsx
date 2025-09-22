@@ -18,24 +18,24 @@ const iconVariants = {
 };
 
 const containerVariants = {
-  hidden: { opacity: 0, y: 50 },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.5,
+      duration: 0.6,
       staggerChildren: 0.1
     }
   }
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 10 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.3,
+      duration: 0.4,
       ease: "easeOut"
     }
   }
@@ -46,15 +46,18 @@ export default function Footer() {
     <motion.footer 
       variants={containerVariants}
       initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-100px" }}
-      className="bg text-white p-6 mt-10 z-50"
+      animate="visible"
+      className="text-white p-6 w-full bg"
+      style={{
+
+        minHeight: "80px"
+      }}
     >
-      <div className="container mx-auto flex flex-col md:flex-row items-center justify-between z-50">
+      <div className="container mx-auto flex flex-col md:flex-row items-center justify-between">
         
         <motion.div 
           variants={itemVariants}
-          className="text-lg font-semibold mb-4 md:mb-0"
+          className="text-lg font-semibold mb-4 md:mb-0 text-gray-800"
         >
           © {new Date().getFullYear()} Wn store
         </motion.div>
@@ -70,7 +73,7 @@ export default function Footer() {
             href="https://facebook.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-blue-400 transition-colors duration-200"
+            className="text-gray-700 hover:text-blue-600 transition-colors duration-200"
           >
             <Facebook size={22} />
           </motion.a>
@@ -82,7 +85,7 @@ export default function Footer() {
             href="https://www.instagram.com/wn_store_eg_2025/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-pink-400 transition-colors duration-200"
+            className="text-gray-700 hover:text-pink-500 transition-colors duration-200"
           >
             <Instagram size={22} />
           </motion.a>
@@ -92,7 +95,7 @@ export default function Footer() {
             whileHover="hover"
             whileTap="tap"
             href="mailto:your@email.com"
-            className="hover:text-green-400 transition-colors duration-200"
+            className="text-gray-700 hover:text-green-500 transition-colors duration-200"
           >
             <Mail size={22} />
           </motion.a>
