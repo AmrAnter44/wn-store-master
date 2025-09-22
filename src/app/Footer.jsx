@@ -101,6 +101,12 @@ export default function Footer() {
           </motion.a>
         </motion.div>
       </div>
+            <p className="text-center ">
+        Direct by{" "}
+        <a href="https://tamyaz.online/" className="text-black">
+          Tamyaz
+        </a>
+      </p>
     </motion.footer>
   );
 }
