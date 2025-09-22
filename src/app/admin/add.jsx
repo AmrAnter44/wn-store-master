@@ -143,11 +143,22 @@ export default function AddProduct() {
   const sizeOptions = ["S", "M", "L", "XL"];
   const typeOptions = ["dress", "casual", "Bag"];
 
+  // Check if current type is bag
+  const isBag = type.toLowerCase() === "bag";
+
   const handleCheckboxChange = (value, state, setState) => {
     if (state.includes(value)) {
       setState(state.filter((v) => v !== value));
     } else {
       setState([...state, value]);
+    }
+  };
+
+  // Clear sizes when type changes to bag
+  const handleTypeChange = (newType) => {
+    setType(newType);
+    if (newType.toLowerCase() === "bag") {
+      setSizes([]);
     }
   };
 
@@ -298,7 +309,8 @@ export default function AddProduct() {
     setLoading(true);
     setMessage("");
 
-    if (!name || !price || colors.length === 0 || sizes.length === 0 || !type || files.length === 0) {
+    // For bags, sizes are not required
+    if (!name || !price || colors.length === 0 || (!isBag && sizes.length === 0) || !type || files.length === 0) {
       setMessage("Please fill in all required fields.");
       setLoading(false);
       return;
@@ -323,7 +335,7 @@ export default function AddProduct() {
         description: description || "",
         pictures: pictureUrls,
         colors,
-        sizes,
+        sizes: isBag ? [] : sizes, // Empty sizes array for bags
         type,
         owner_id: "dev-user-123"
       };
@@ -496,28 +508,7 @@ export default function AddProduct() {
         </AnimatePresence>
       </motion.div>
 
-      {/* Sizes */}
-      <motion.div variants={inputVariants}>
-        <p className="mb-2 font-semibold">Sizes (required):</p>
-        <div className="flex flex-wrap gap-2">
-          {sizeOptions.map((size) => (
-            <motion.button 
-              key={size} 
-              type="button" 
-              onClick={() => handleCheckboxChange(size, sizes, setSizes)} 
-              className={`px-3 py-1 rounded-full transition-all duration-300 ${
-                sizes.includes(size) ? "bg-[#b09dc1da]" : "hover:bg-[#b09dc1da]"
-              }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {size}
-            </motion.button>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Type */}
+      {/* Type - Moved before sizes so we can conditionally show sizes */}
       <motion.div variants={inputVariants}>
         <p className="mb-2 font-semibold">Type (required):</p>
         <div className="flex flex-wrap gap-2">
@@ -525,7 +516,7 @@ export default function AddProduct() {
             <motion.button 
               key={t} 
               type="button" 
-              onClick={() => setType(t)} 
+              onClick={() => handleTypeChange(t)} 
               className={`px-3 py-1 rounded-full transition-all duration-300 ${
                 type === t ? "bg-[#b09dc1da]" : "hover:bg-[#b09dc1da]"
               }`}
@@ -537,6 +528,37 @@ export default function AddProduct() {
           ))}
         </div>
       </motion.div>
+
+      {/* Sizes - Only show if not a bag */}
+      <AnimatePresence>
+        {!isBag && (
+          <motion.div 
+            variants={inputVariants}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            transition={{ duration: 0.3 }}
+          >
+            <p className="mb-2 font-semibold">Sizes (required):</p>
+            <div className="flex flex-wrap gap-2">
+              {sizeOptions.map((size) => (
+                <motion.button 
+                  key={size} 
+                  type="button" 
+                  onClick={() => handleCheckboxChange(size, sizes, setSizes)} 
+                  className={`px-3 py-1 rounded-full transition-all duration-300 ${
+                    sizes.includes(size) ? "bg-[#b09dc1da]" : "hover:bg-[#b09dc1da]"
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {size}
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Images */}
       <motion.div variants={inputVariants}>
