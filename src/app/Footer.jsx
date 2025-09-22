@@ -73,7 +73,7 @@ export default function Footer() {
             href="https://facebook.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-700 hover:text-blue-600 transition-colors duration-200"
+            className="text-white hover:text-blue-600 transition-colors duration-200"
           >
             <Facebook size={22} />
           </motion.a>
@@ -85,7 +85,7 @@ export default function Footer() {
             href="https://www.instagram.com/wn_store_eg_2025/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-700 hover:text-pink-500 transition-colors duration-200"
+            className="text-white hover:text-pink-500 transition-colors duration-200"
           >
             <Instagram size={22} />
           </motion.a>
@@ -95,15 +95,15 @@ export default function Footer() {
             whileHover="hover"
             whileTap="tap"
             href="mailto:your@email.com"
-            className="text-gray-700 hover:text-green-500 transition-colors duration-200"
+            className="text-white hover:text-green-500 transition-colors duration-200"
           >
             <Mail size={22} />
           </motion.a>
         </motion.div>
-      </div>
-            <p className="text-center ">
+      </div >
+            <p className="text-center bg ">
         Direct by{" "}
-        <a href="https://tamyaz.online/" className="text-black bg">
+        <a href="https://tamyaz.online/" className="text-black ">
           Tamyaz
         </a>
       </p>
