@@ -43,6 +43,7 @@ const itemVariants = {
 
 export default function Footer() {
   return (
+    <div>
     <motion.footer 
       variants={containerVariants}
       initial="hidden"
@@ -53,7 +54,7 @@ export default function Footer() {
         minHeight: "80px"
       }}
     >
-      <div className="container mx-auto flex flex-col md:flex-row items-center justify-between">
+      <div className="container mx-auto flex flex-col bg  w-full md:flex-row items-center justify-between">
         
         <motion.div 
           variants={itemVariants}
@@ -101,12 +102,13 @@ export default function Footer() {
           </motion.a>
         </motion.div>
       </div >
-            <p className="text-center bg ">
+            <p className="text-center bg w-full mt-3">
         Direct by{" "}
-        <a href="https://tamyaz.online/" className="text-black ">
+        <a href="https://tamyaz.online/" className="text-black  ">
           Tamyaz
         </a>
       </p>
     </motion.footer>
+    </div>
   );
 }
