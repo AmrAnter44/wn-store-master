@@ -103,7 +103,7 @@ export default function Footer() {
       </div>
             <p className="text-center ">
         Direct by{" "}
-        <a href="https://tamyaz.online/" className="text-black">
+        <a href="https://tamyaz.online/" className="text-black bg">
           Tamyaz
         </a>
       </p>
