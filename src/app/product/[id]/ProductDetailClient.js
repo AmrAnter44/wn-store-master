@@ -33,7 +33,8 @@ export default function ProductDetailClient({ productId }) {
 
       setProduct(data)
       setSelectedColor(data.colors?.[0] || "")
-      setSelectedSize(data.sizes?.[0] || "")
+      // Only set default size if product is not a bag
+      setSelectedSize(data.type?.toLowerCase() === "bag" ? "" : (data.sizes?.[0] || ""))
       setSelectedImage(data.pictures?.[0] || "")
       setLoading(false)
     }
@@ -63,7 +64,9 @@ export default function ProductDetailClient({ productId }) {
   }
 
   const handleAddToCart = () => {
-    if (!selectedSize) {
+    // Check if size is required (not for bags) and not selected
+    const isBag = product.type?.toLowerCase() === "bag"
+    if (!isBag && !selectedSize) {
       toast.error("⚠️ Please select a size first!", {
         duration: 3000,
         style: {
@@ -118,6 +121,9 @@ export default function ProductDetailClient({ productId }) {
       </motion.div>
     )
   }
+
+  // Check if product is a bag
+  const isBag = product.type?.toLowerCase() === "bag"
 
   return (
     <>
@@ -248,9 +254,7 @@ export default function ProductDetailClient({ productId }) {
                         key={idx}
                         onClick={() => {
                           setSelectedColor(color)
-                          setSelectedImage(
-                            product.pictures?.[idx] || product.pictures?.[0]
-                          )
+                          // Removed the image changing logic when color changes
                         }}
                         className={`w-6 h-6 rounded-full border-2 transition-all ${
                           isSelected ? "border-black scale-110" : "border-gray-300 hover:border-gray-400"
@@ -274,36 +278,38 @@ export default function ProductDetailClient({ productId }) {
               </motion.div>
             )}
 
-            {/* مقاسات */}
-            <motion.div variants={itemVariants}>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
-                Size: {selectedSize || "Please select"}
-              </h3>
-              <div className="flex gap-3">
-                {["S", "M", "L", "XL"].map((size) => {
-                  const isAvailable = product.sizes?.includes(size)
-                  const isSelected = selectedSize === size
-                  return (
-                    <motion.button
-                      key={size}
-                      onClick={() => isAvailable && setSelectedSize(size)}
-                      disabled={!isAvailable}
-                      className={`w-12 h-12 rounded-lg border-2 font-semibold transition-all ${
-                        isSelected 
-                          ? "border-black bg-black text-white" 
-                          : isAvailable 
-                            ? "border-gray-300 bg-white text-gray-900 hover:border-gray-400" 
-                            : "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
-                      }`}
-                      whileHover={isAvailable ? { scale: 1.05 } : {}}
-                      whileTap={isAvailable ? { scale: 0.95 } : {}}
-                    >
-                      {size}
-                    </motion.button>
-                  )
-                })}
-              </div>
-            </motion.div>
+            {/* مقاسات - Hidden for bags */}
+            {!isBag && (
+              <motion.div variants={itemVariants}>
+                <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
+                  Size: {selectedSize || "Please select"}
+                </h3>
+                <div className="flex gap-3">
+                  {["S", "M", "L", "XL"].map((size) => {
+                    const isAvailable = product.sizes?.includes(size)
+                    const isSelected = selectedSize === size
+                    return (
+                      <motion.button
+                        key={size}
+                        onClick={() => isAvailable && setSelectedSize(size)}
+                        disabled={!isAvailable}
+                        className={`w-12 h-12 rounded-lg border-2 font-semibold transition-all ${
+                          isSelected 
+                            ? "border-black bg-black text-white" 
+                            : isAvailable 
+                              ? "border-gray-300 bg-white text-gray-900 hover:border-gray-400" 
+                              : "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                        }`}
+                        whileHover={isAvailable ? { scale: 1.05 } : {}}
+                        whileTap={isAvailable ? { scale: 0.95 } : {}}
+                      >
+                        {size}
+                      </motion.button>
+                    )
+                  })}
+                </div>
+              </motion.div>
+            )}
 
             {/* زرار إضافة للعربة */}
             <motion.div className="space-y-4" variants={itemVariants}>
@@ -311,8 +317,8 @@ export default function ProductDetailClient({ productId }) {
                 onClick={handleAddToCart}
                 className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 ${
                   added
-                    ? "bg text-white"
-                    : "bg text-white hover:bg-gray-800"
+                    ? "bg-green-600 text-white"
+                    : "bg-black text-white hover:bg-gray-800"
                 }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -338,7 +344,6 @@ export default function ProductDetailClient({ productId }) {
                       exit={{ opacity: 0, y: -10 }}
                       className="flex items-center justify-center gap-2"
                     >
-
                       <span>Add to Cart</span>
                     </motion.div>
                   )}

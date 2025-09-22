@@ -689,19 +689,19 @@ export default function StorePage() {
                     </div>
 
                     {/* Available Sizes */}
-                    {product.sizes && product.sizes.length > 0 && (
-                      <div className="flex gap-1 mb-4">
-                        <span className="text-xs text-gray-500 mr-2">Sizes:</span>
-                        {product.sizes.slice(0, 4).map((size, idx) => (
-                          <span
-                            key={idx}
-                            className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded font-medium"
-                          >
-                            {size}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+{product.sizes && product.sizes.length > 0 && product.type?.toLowerCase() !== "bag" && (
+  <div className="flex gap-1 mb-4">
+    <span className="text-xs text-gray-500 mr-2">Sizes:</span>
+    {product.sizes.slice(0, 4).map((size, idx) => (
+      <span
+        key={idx}
+        className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded font-medium"
+      >
+        {size}
+      </span>
+    ))}
+  </div>
+)}
                   </div>
                 </motion.div>
               </Link>
