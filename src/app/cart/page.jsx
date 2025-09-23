@@ -90,14 +90,15 @@ const emptyCartVariants = {
 };
 
 export default function Cart() {
-  const { cart, removeFromCart } = useMyContext();
+  const { cart, removeFromCart, cartTotal } = useMyContext();
   const router = useRouter();
 
-  const total = cart.reduce(
-    (acc, item) =>
-      acc + (item.newPrice ? item.newPrice : item.price) * item.quantity,
-    0
-  );
+  // ✅ FIXED: حساب المجموع باستخدام السعر الصحيح
+  const total = cart.reduce((acc, item) => {
+    // استخدم effectivePrice إذا متاح، وإلا newprice، وإلا price
+    const itemPrice = item.effectivePrice || item.newprice || item.price;
+    return acc + (itemPrice * item.quantity);
+  }, 0);
 
   const goToCheckout = () => {
     router.push("/checkout");
@@ -114,17 +115,28 @@ export default function Cart() {
         className="text-2xl font-bold mb-4"
         variants={itemVariants}
       >
-        Your Cart
+        Your Cart ({cart.length} {cart.length === 1 ? 'item' : 'items'})
       </motion.h1>
 
       {cart.length === 0 ? (
-        <motion.p
+        <motion.div
           variants={emptyCartVariants}
           initial="hidden"
           animate="visible"
+          className="text-center py-12"
         >
-          Your cart is empty.
-        </motion.p>
+          <div className="text-6xl mb-4">🛒</div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Your cart is empty</h2>
+          <p className="text-gray-600 mb-6">Add some products to get started!</p>
+          <motion.button
+            onClick={() => router.push('/')}
+            className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Continue Shopping
+          </motion.button>
+        </motion.div>
       ) : (
         <>
           <motion.ul 
@@ -133,13 +145,17 @@ export default function Cart() {
           >
             {cart.map((item, index) => {
               const colorIndex = item.colors?.indexOf(item.selectedColor) ?? 0;
-              const imgSrc =
-                item.pictures?.[colorIndex] || item.pictures?.[0] || "/fallback.png";
+              const imgSrc = item.pictures?.[colorIndex] || item.pictures?.[0] || "/fallback.png";
+              
+              // ✅ FIXED: حساب السعر الصحيح للعنصر
+              const itemPrice = item.effectivePrice || item.newprice || item.price;
+              const originalPrice = item.price;
+              const hasDiscount = item.newprice && item.newprice < originalPrice;
 
               return (
                 <motion.li
                   key={`${item.id}-${item.selectedColor}-${item.selectedSize}`}
-                  className="flex justify-between items-center"
+                  className="bg-white rounded-lg shadow-sm border p-4 flex gap-4"
                   variants={itemVariants}
                   whileHover={{ 
                     scale: 1.01,
@@ -147,7 +163,9 @@ export default function Cart() {
                   }}
                   layout
                 >
+                  {/* Product Image */}
                   <motion.div
+                    className="flex-shrink-0"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ 
@@ -156,19 +174,23 @@ export default function Cart() {
                       ease: "easeOut"
                     }}
                   >
-                    <div>
+                    <div className="w-24 h-32 relative rounded-lg overflow-hidden bg-gray-50">
                       <Image
                         src={imgSrc}
-                        alt={`Product image ${index}`}
-                        className="w-50 object-cover mb-4 rounded"
-                        width={100}
-                        height={400}
+                        alt={item.name}
+                        fill
+                        className="object-cover"
+                        sizes="96px"
+                        onError={(e) => {
+                          e.target.src = 'https://dfurfmrwpyotjfrryatn.supabase.co/storage/v1/object/public/product-images/casual.png'
+                        }}
                       />
                     </div>
                   </motion.div>
 
+                  {/* Product Details */}
                   <motion.div 
-                    className="w-40"
+                    className="flex-grow"
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ 
@@ -177,41 +199,63 @@ export default function Cart() {
                       ease: "easeOut"
                     }}
                   >
-                    <p className="p-2">
-                      Price:{" "}
-                      {item.newPrice ? (
-                        <span>{item.newPrice}.LE</span>
-                      ) : (
-                        <>{item.price} .LE</>
+                    <h3 className="font-semibold text-gray-900 mb-2">{item.name}</h3>
+                    
+                    {/* Price Display */}
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-lg font-bold text-gray-900">
+                        {itemPrice} LE
+                      </span>
+                      {hasDiscount && (
+                        <span className="text-sm text-gray-500 line-through">
+                          {originalPrice} LE
+                        </span>
                       )}
-                    </p>
+                      {hasDiscount && (
+                        <span className="bg text-white px-2 py-1 rounded text-xs font-medium">
+                          {Math.round(((originalPrice - item.newprice) / originalPrice) * 100)}% OFF
+                        </span>
+                      )}
+                    </div>
 
-                    <p className="p-2">Quantity: {item.quantity}</p>
+                    {/* Product Options */}
+                    <div className="text-sm text-gray-600 space-y-1">
+                      <p>Quantity: <span className="font-medium">{item.quantity}</span></p>
+                      
+                      {item.selectedColor && (
+                        <p className="flex items-center gap-2">
+                          Color: 
+                          <span
+                            style={{ backgroundColor: item.selectedColor }}
+                            className="inline-block w-4 h-4 rounded-full border-2 border-gray-300"
+                          ></span>
+                          <span className="capitalize font-medium">{item.selectedColor}</span>
+                        </p>
+                      )}
 
-                    {item.colors && item.colors.length > 1 && (
-                      <p className="p-2">
-                        Color:{" "}
-                        <span
-                          style={{ backgroundColor: item.selectedColor }}
-                          className="inline-block w-4 h-4 rounded-full border-2"
-                        ></span>
+                      {item.selectedSize && (
+                        <p>Size: <span className="font-medium">{item.selectedSize}</span></p>
+                      )}
+                    </div>
+
+                    {/* Subtotal */}
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <p className="text-lg font-semibold text-gray-900">
+                        Subtotal: {(itemPrice * item.quantity).toLocaleString()} LE
                       </p>
-                    )}
+                    </div>
 
-                    <p className="p-2">Size: {item.selectedSize}</p>
-
+                    {/* Remove Button */}
                     <motion.button
-                      className="text-red-400 text-xl hover:text-red-500 m-5"
-                      onClick={() =>
-                        removeFromCart(item.id, item.selectedColor, item.selectedSize)
-                      }
+                      className="mt-3 text-red-500 hover:text-red-600 text-sm font-medium transition-colors"
+                      onClick={() => removeFromCart(item.id, item.selectedColor, item.selectedSize)}
                       whileHover={{ 
-                        scale: 1.1,
+                        scale: 1.05,
                         transition: { duration: 0.2 }
                       }}
                       whileTap={{ scale: 0.9 }}
                     >
-                      Remove
+                      🗑️ Remove from cart
                     </motion.button>
                   </motion.div>
                 </motion.li>
@@ -219,40 +263,54 @@ export default function Cart() {
             })}
           </motion.ul>
 
+          {/* Cart Summary */}
           <motion.div 
-            className="mt-6 font-bold text-lg"
+            className="mt-8 bg-gray-50 rounded-lg p-6"
             variants={totalVariants}
           >
-            Total: {total} .LE
-          </motion.div>
-        </>
-      )}
+            <div className="flex justify-between items-center text-xl font-bold text-gray-900 mb-4">
+              <span>Total:</span>
+              <span>{total.toLocaleString()} LE</span>
+            </div>
+            
+            {/* Savings Display */}
+            {cart.some(item => item.newprice) && (
+              <motion.div 
+                className="text-sm text-green-600 mb-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                🎉 You're saving {cart.reduce((savings, item) => {
+                  if (item.newprice && item.price > item.newprice) {
+                    return savings + ((item.price - item.newprice) * item.quantity);
+                  }
+                  return savings;
+                }, 0).toLocaleString()} LE!
+              </motion.div>
+            )}
 
-      <motion.div
-        variants={buttonVariants}
-      >
-        {cart.length >= 1 && (
-          <div>
             <motion.button
-              className="bg hover:bg-fuchsia-500 text-white font-bold py-2 px-4 rounded w-full"
+              className="w-full bg text-white font-bold py-4 px-6 rounded-lg hover:bg-opacity-90 transition-all"
               onClick={goToCheckout}
               variants={buttonVariants}
               whileHover="hover"
               whileTap="tap"
             >
-              Order Now
+              Proceed to Checkout
             </motion.button>
-            <motion.h4
+            
+            <motion.p
+              className="text-sm text-gray-600 mt-4 text-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              To make the ordering process easier for both you and us, your order details will be
-              sent to WhatsApp for quick confirmation.
-            </motion.h4>
-          </div>
-        )}
-      </motion.div>
+              Your order details will be sent to WhatsApp for quick confirmation.
+            </motion.p>
+          </motion.div>
+        </>
+      )}
     </motion.div>
   );
 }

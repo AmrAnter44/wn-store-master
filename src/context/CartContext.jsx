@@ -24,7 +24,7 @@ export const MyContextProvider = ({ children }) => {
     localStorage.removeItem("cart");
   };
 
-  // ✅ إضافة منتج (مع زيادة الكمية لو مضاف قبل كده)
+  // ✅ FIXED: إضافة منتج مع حفظ السعر الصحيح (newprice إذا موجود)
   const addToCart = async (product) => {
     // جلب البيانات من DB لتأكيد كل التفاصيل (optional)
     let prod = product;
@@ -37,6 +37,9 @@ export const MyContextProvider = ({ children }) => {
       if (!error && data) prod = data;
     }
 
+    // ✅ FIXED: تحديد السعر الصحيح - newprice إذا موجود، وإلا price
+    const correctPrice = prod.newprice && prod.newprice > 0 ? prod.newprice : prod.price;
+
     setCart((prev) => {
       const existing = prev.find(
         (item) =>
@@ -46,15 +49,25 @@ export const MyContextProvider = ({ children }) => {
       );
 
       if (existing) {
+        // إذا المنتج موجود، زود الكمية فقط
         return prev.map((item) =>
           item.id === prod.id &&
           item.selectedColor === prod.selectedColor &&
           item.selectedSize === prod.selectedSize
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + prod.quantity || item.quantity + 1 }
             : item
         );
       } else {
-        return [...prev, { ...prod, quantity: 1 }];
+        // ✅ FIXED: إضافة المنتج مع السعر الصحيح مع property منفصل للسعر المُستخدم
+        return [...prev, { 
+          ...prod, 
+          quantity: prod.quantity || 1,
+          // ✅ إضافة السعر المستخدم كـ property منفصل للوضوح
+          effectivePrice: correctPrice,
+          // الحفاظ على الأسعار الأصلية كما هي
+          originalPrice: prod.price,
+          salePrice: prod.newprice || null
+        }];
       }
     });
   };
@@ -84,7 +97,14 @@ export const MyContextProvider = ({ children }) => {
     );
   };
 
+  // ✅ FIXED: حساب العدد والمجموع باستخدام السعر الصحيح
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
+
+  // ✅ FIXED: حساب المجموع الكلي باستخدام السعر الفعال
+  const cartTotal = cart.reduce((total, item) => {
+    const itemPrice = item.effectivePrice || item.newprice || item.price;
+    return total + (itemPrice * item.quantity);
+  }, 0);
 
   return (
     <MyContext.Provider
@@ -94,6 +114,7 @@ export const MyContextProvider = ({ children }) => {
         removeFromCart,
         decreaseQuantity,
         cartCount,
+        cartTotal, // ✅ إضافة المجموع الكلي
         clearCart,
       }}
     >
