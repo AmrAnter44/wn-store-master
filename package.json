@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:debug": "NEXT_DEBUG=1 next build",
+    "build:analyze": "ANALYZE=true next build"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.0.0",
@@ -32,10 +34,10 @@
     "@tailwindcss/postcss": "^4",
     "tailwindcss": "^4"
   },
-  "description": "This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).",
+  "description": "Wn Store - Fashion E-commerce Website",
   "main": "index.js",
-  "keywords": [],
-  "author": "",
+  "keywords": ["fashion", "ecommerce", "nextjs", "supabase"],
+  "author": "Wn Store",
   "license": "ISC",
   "type": "module"
 }

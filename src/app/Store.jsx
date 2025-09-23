@@ -3,31 +3,48 @@ import StoreSSG from "../components/StoreSSG"
 import { getAllProducts, getSaleProducts, getProductCategories } from "@/lib/productService"
 
 /**
- * صفحة المتجر - Static Generation
- * نفس البيانات بتاعة الصفحة الرئيسية بس بدون الهيرو سيكشن
+ * صفحة المتجر - Static Generation مع Error Handling
  */
 export default async function StorePage() {
-  // جلب البيانات في build time
-  const [allProducts, saleProducts, categories] = await Promise.all([
-    getAllProducts(),
-    getSaleProducts(4),
-    getProductCategories()
-  ])
+  try {
+    console.log('🏪 Building store page...')
+    
+    // جلب البيانات في build time مع build mode
+    const [allProducts, saleProducts, categories] = await Promise.all([
+      getAllProducts(false, true), // Enable build mode
+      getSaleProducts(4, true),
+      getProductCategories(true)
+    ])
 
-  console.log(`🏪 Store page built with:`)
-  console.log(`   - Total products: ${allProducts.length}`)
-  console.log(`   - Sale products: ${saleProducts.length}`)
-  console.log(`   - Categories: ${categories.length}`)
+    console.log(`🏪 Store page built with:`)
+    console.log(`   - Total products: ${allProducts.length}`)
+    console.log(`   - Sale products: ${saleProducts.length}`)
+    console.log(`   - Categories: ${categories.length}`)
 
-  return (
-    <div className="min-h-screen pt-16">
-      <StoreSSG
-        initialProducts={allProducts}
-        initialSaleProducts={saleProducts}
-        initialCategories={categories}
-      />
-    </div>
-  )
+    return (
+      <div className="min-h-screen pt-16">
+        <StoreSSG
+          initialProducts={allProducts}
+          initialSaleProducts={saleProducts}
+          initialCategories={categories}
+        />
+      </div>
+    )
+    
+  } catch (error) {
+    console.error('❌ Store page build error:', error)
+    
+    // Provide fallback UI with empty data
+    return (
+      <div className="min-h-screen pt-16">
+        <StoreSSG
+          initialProducts={[]}
+          initialSaleProducts={[]}
+          initialCategories={[]}
+        />
+      </div>
+    )
+  }
 }
 
 /**
@@ -54,8 +71,8 @@ export const metadata = {
 }
 
 /**
- * إعدادات الcache للأداء الأمثل
+ * إعدادات الcache للأداء الأمثل - محسنة
  */
-export const revalidate = false // Manual revalidation only
-export const dynamic = 'force-static' // فورس static generation
-export const fetchCache = 'force-cache' // استخدم الcache للdata fetching
+export const revalidate = 3600 // 1 hour بدلاً من false
+export const dynamic = 'auto' // بدلاً من force-static
+export const fetchCache = 'default-cache' // بدلاً من force-cache

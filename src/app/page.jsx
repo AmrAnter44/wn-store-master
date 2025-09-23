@@ -4,36 +4,54 @@ import StoreSSG from "../app/StoreSSG"
 import { getAllProducts, getSaleProducts, getProductCategories } from "@/lib/productService"
 
 /**
- * الصفحة الرئيسية - Static Generation
- * هتتبني مرة واحدة وتتcache في CDN
+ * الصفحة الرئيسية - Static Generation مع Error Handling محسن
  */
 export default async function Home() {
-  // جلب البيانات في build time
-  const [allProducts, saleProducts, categories] = await Promise.all([
-    getAllProducts(),
-    getSaleProducts(4),
-    getProductCategories()
-  ])
+  try {
+    console.log('🏠 Building home page...')
+    
+    // جلب البيانات في build time مع build mode
+    const [allProducts, saleProducts, categories] = await Promise.all([
+      getAllProducts(false, true), // Enable build mode
+      getSaleProducts(4, true),
+      getProductCategories(true)
+    ])
 
-  console.log(`📊 Home page built with:`)
-  console.log(`   - Total products: ${allProducts.length}`)
-  console.log(`   - Sale products: ${saleProducts.length}`)
-  console.log(`   - Categories: ${categories.length}`)
+    console.log(`📊 Home page built with:`)
+    console.log(`   - Total products: ${allProducts.length}`)
+    console.log(`   - Sale products: ${saleProducts.length}`)
+    console.log(`   - Categories: ${categories.length}`)
 
-  return (
-    <>
-      <Nav />
-      <StoreSSG
-        initialProducts={allProducts}
-        initialSaleProducts={saleProducts}
-        initialCategories={categories}
-      />
-    </>
-  )
+    return (
+      <>
+        <Nav />
+        <StoreSSG
+          initialProducts={allProducts}
+          initialSaleProducts={saleProducts}
+          initialCategories={categories}
+        />
+      </>
+    )
+    
+  } catch (error) {
+    console.error('❌ Home page build error:', error)
+    
+    // Provide fallback UI with empty data
+    return (
+      <>
+        <Nav />
+        <StoreSSG
+          initialProducts={[]}
+          initialSaleProducts={[]}
+          initialCategories={[]}
+        />
+      </>
+    )
+  }
 }
 
 /**
- * إعدادات Next.js للـ Static Generation
+ * إعدادات Next.js للـ Static Generation - محسنة
  */
 export const metadata = {
   title: "Wn Store - Latest Fashion Collection",
@@ -56,8 +74,8 @@ export const metadata = {
 }
 
 /**
- * إعدادات الcache - مهمة جداً للأداء
+ * إعدادات الcache - محسنة للبناء
  */
-export const revalidate = false // Manual revalidation only
-export const dynamic = 'force-static' // فورس static generation
-export const fetchCache = 'force-cache' // استخدم الcache للdata fetching
+export const revalidate = 3600 // 1 hour بدلاً من false
+export const dynamic = 'auto' // بدلاً من force-static
+export const fetchCache = 'default-cache' // بدلاً من force-cache

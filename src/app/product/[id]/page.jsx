@@ -10,15 +10,15 @@ export default async function ProductDetailPage({ params }) {
   const { id } = params
   
   try {
-    // جلب بيانات المنتج
-    const product = await getProductById(id)
+    // جلب بيانات المنتج مع build mode
+    const product = await getProductById(id, true)
     
     if (!product) {
       notFound()
     }
 
-    // جلب المنتجات المشابهة
-    const relatedProducts = await getRelatedProducts(product, 8)
+    // جلب المنتجات المشابهة مع build mode
+    const relatedProducts = await getRelatedProducts(product, 8, true)
 
     console.log(`📦 Product page built for: ${product.name} (ID: ${id})`)
     console.log(`   - Related products: ${relatedProducts.length}`)
@@ -41,15 +41,21 @@ export default async function ProductDetailPage({ params }) {
 
 /**
  * Generate Static Params - بناء كل صفحات المنتجات في build time
+ * 🔥 محدود بـ 10 منتجات فقط لتجنب timeout
  */
 export async function generateStaticParams() {
   try {
-    const products = await getAllProducts()
+    const products = await getAllProducts(false, true) // Enable build mode
     
-    console.log(`📋 Generating static params for ${products.length} products`)
+    console.log(`📋 Found ${products.length} total products`)
+    
+    // 🔥 CRITICAL: قلل العدد لتجنب build timeout
+    const limitedProducts = products.slice(0, 10) // أول 10 منتجات فقط
+    
+    console.log(`📋 Generating static params for ${limitedProducts.length} products`)
     
     // إنشاء array من IDs للمنتجات
-    const params = products.map((product) => ({
+    const params = limitedProducts.map((product) => ({
       id: product.id.toString()
     }))
 
@@ -58,7 +64,7 @@ export async function generateStaticParams() {
     
   } catch (error) {
     console.error('❌ Error generating static params:', error)
-    return []
+    return [] // Return empty instead of crashing build
   }
 }
 
@@ -69,7 +75,7 @@ export async function generateMetadata({ params }) {
   const { id } = params
   
   try {
-    const product = await getProductById(id)
+    const product = await getProductById(id, true)
     
     if (!product) {
       return {
@@ -124,8 +130,8 @@ export async function generateMetadata({ params }) {
 }
 
 /**
- * إعدادات الcache والأداء
+ * إعدادات الcache والأداء - محسنة لتجنب build timeout
  */
-export const revalidate = false // Manual revalidation only
-export const dynamic = 'force-static' // فورس static generation
-export const dynamicParams = true // السماح بparameters جديدة (للمنتجات المضافة بعد build)
+export const revalidate = 3600 // بدلاً من false، استخدم 1 ساعة
+export const dynamic = 'auto' // بدلاً من force-static
+export const dynamicParams = true
