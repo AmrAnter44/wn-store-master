@@ -52,13 +52,13 @@ export default function Navbar() {
                 whileTap={{ scale: 0.9 }}
                 transition={{ duration: 0.2 }}
               >
-                <Link href="/cart" className="relative m-2">
+                <Link href="/cart" className="relative m-2" aria-label="View cart">
                   <FontAwesomeIcon
                     className={`fa-solid fa-cart-shopping text-2xl w-8 ${
                       scrolled ? "bgg" : "text-white"
                     } shadow-2xl shadow-black`}
                     icon={faCartShopping}
-                    aria-label="View cart"
+                    
                   />
                   {cartCount > 0 && (
                     <motion.span
@@ -71,7 +71,7 @@ export default function Navbar() {
                         stiffness: 500,
                         damping: 30,
                       }}
-                      className="absolute -top-3 left-4 bg-white text-purple-600 text-xs w-5 h-5 flex items-center justify-center rounded-full"
+                      className="absolute -top-3 left-4 bg-white bgg text-xs w-5 h-5 flex items-center justify-center rounded-full"
                     >
                       {cartCount}
                     </motion.span>
