@@ -118,7 +118,7 @@ export default function RelatedProducts({ currentProduct }) {
                   initial={{ scale: 0, rotate: -12 }}
                   animate={{ scale: 1, rotate: -12 }}
                   transition={{ duration: 0.3, delay: 0.2 }}
-                  className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium"
+                  className="absolute top-3 left-3 bg text-white px-2 py-1 rounded-full text-xs font-medium"
                 >
                   Sale
                 </motion.div>
