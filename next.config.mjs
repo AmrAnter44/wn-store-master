@@ -27,13 +27,12 @@ const nextConfig = {
   poweredByHeader: false,
   trailingSlash: false,
 
-  // Experimental features for better performance
+  // ✅ Fix: Remove problematic experimental optimizations that conflict with Framer Motion
   experimental: {
-    optimizeCss: true,
-    optimizePackageImports: ['framer-motion', 'lucide-react', 'react-icons'],
+    // Remove optimizeCss and optimizePackageImports that cause build issues
   },
 
-  // Webpack optimization
+  // Webpack optimization - Fixed for Framer Motion
   webpack: (config, { dev, isServer }) => {
     // Production optimizations
     if (!dev) {
@@ -56,11 +55,8 @@ const nextConfig = {
         },
       }
       
-      // Minimize bundle size
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        'framer-motion': 'framer-motion/dist/framer-motion',
-      }
+      // ✅ Fix: Remove the problematic Framer Motion alias that causes build issues
+      // This was causing the dist/framer-motion path error
     }
     
     return config
@@ -119,6 +115,23 @@ const nextConfig = {
   onDemandEntries: {
     maxInactiveAge: 25 * 1000,
     pagesBufferLength: 2,
+  },
+
+  // ✅ Fix: Ensure proper transpilation of packages that might cause issues
+  transpilePackages: [],
+  
+  // ✅ Fix: Add modularizeImports to optimize bundle size without breaking imports
+  modularizeImports: {
+    'lucide-react': {
+      transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
+      skipDefaultConversion: true,
+    },
+    'react-icons/fa': {
+      transform: 'react-icons/fa/{{member}}',
+    },
+    'react-icons/fa6': {
+      transform: 'react-icons/fa6/{{member}}',
+    },
   },
 }
 
