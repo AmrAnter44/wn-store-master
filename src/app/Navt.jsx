@@ -22,7 +22,7 @@ export default function NavT() {
           <div className="flex items-center gap-2 lg:gap-4 mr-4 lg:mr-9">
 
             <div>
-                          <Link href="/cart" className="relative m-2">
+                          <Link href="/cart" className="relative m-2" aria-label="Go to cart">
               <FontAwesomeIcon className="fa-solid fa-cart-shopping text-white w-8" icon={faCartShopping} />
               {cartCount > 0 && (
                 <span className="absolute -top-3 left-4 bg-white text-xs w-5 h-5 flex items-center justify-center rounded-full">

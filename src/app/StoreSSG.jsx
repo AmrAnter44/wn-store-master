@@ -157,7 +157,7 @@ export default function StoreSSG({
             <motion.div variants={itemVariants} className="text-center mb-8">
               <div className="inline-flex items-center gap-3 bg text-white px-6 py-3 rounded-full mb-4">
                 <FaFire className="text-xl" />
-                <span className="text-lg font-bold">SALE UP TO 50% OFF</span>
+                <span className="text-lg font-bold text-white">SALE UP TO 50% OFF</span>
                 <FaFire className="text-xl" />
               </div>
               <h2 className="text-3xl font-bold text-gray-900 mb-2">Hot Deals</h2>
@@ -285,25 +285,35 @@ export default function StoreSSG({
             )}
 
             {/* Filter Controls */}
-            <div className="flex flex-wrap items-center gap-3 mb-4">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-black"
-              >
-                <option value="newest">Newest First</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="name">Name A-Z</option>
-              </select>
-              
-              <div className="ml-auto flex gap-3">
-                <button
-                  className="px-6 py-3 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all"
-                  onClick={clearAllFilters}
-                >
-                  Clear All
-                </button>
+<div className="flex flex-wrap items-center gap-3 mb-4">
+  {/* Accessible label for select */}
+  <label htmlFor="sort" className="sr-only">
+    Sort products
+  </label>
+  <select
+    id="sort"
+    value={sortBy}
+    onChange={(e) => setSortBy(e.target.value)}
+    className="px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-black"
+  >
+    <option value="newest">Newest First</option>
+    <option value="price-low">Price: Low to High</option>
+    <option value="price-high">Price: High to Low</option>
+    <option value="name">Name A-Z</option>
+  </select>
+
+  <div className="ml-auto flex gap-3">
+    <button
+      type="button"
+      aria-label="Clear all filters"
+      className="px-6 py-3 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all"
+      onClick={clearAllFilters}
+    >
+      Clear All
+    </button>
+
+
+
                 
                 <button
                   className="p-3 rounded-full hover:bg-gray-100 transition-colors"
