@@ -1,27 +1,22 @@
-// app/product/[id]/page.jsx
+// app/product/[id]/page.jsx - SERVER COMPONENT
 import ProductDetailClient from './ProductDetailClient'
 import { getAllProducts, getProductById, getRelatedProducts } from '@/lib/productService'
 import { notFound } from 'next/navigation'
 
-/**
- * صفحة المنتج الواحد - Static Generation مع Dynamic Routes
- */
 export default async function ProductDetailPage({ params }) {
   const { id } = params
   
   try {
-    // جلب بيانات المنتج مع build mode
-    const product = await getProductById(id, true)
+    console.log(`📦 Loading product ${id} with REAL Supabase data...`)
+    
+    const product = await getProductById(id)
     
     if (!product) {
+      console.log(`❌ Product ${id} not found in Supabase`)
       notFound()
     }
 
-    // جلب المنتجات المشابهة مع build mode
-    const relatedProducts = await getRelatedProducts(product, 8, true)
-
-    console.log(`📦 Product page built for: ${product.name} (ID: ${id})`)
-    console.log(`   - Related products: ${relatedProducts.length}`)
+    const relatedProducts = await getRelatedProducts(product, 8)
 
     return (
       <div className="min-h-screen pt-16">
@@ -39,43 +34,12 @@ export default async function ProductDetailPage({ params }) {
   }
 }
 
-/**
- * Generate Static Params - بناء كل صفحات المنتجات في build time
- * 🔥 محدود بـ 10 منتجات فقط لتجنب timeout
- */
-export async function generateStaticParams() {
-  try {
-    const products = await getAllProducts(false, true) // Enable build mode
-    
-    console.log(`📋 Found ${products.length} total products`)
-    
-    // 🔥 CRITICAL: قلل العدد لتجنب build timeout
-    const limitedProducts = products.slice(0, 10) // أول 10 منتجات فقط
-    
-    console.log(`📋 Generating static params for ${limitedProducts.length} products`)
-    
-    // إنشاء array من IDs للمنتجات
-    const params = limitedProducts.map((product) => ({
-      id: product.id.toString()
-    }))
-
-    console.log(`✅ Generated ${params.length} static product pages`)
-    return params
-    
-  } catch (error) {
-    console.error('❌ Error generating static params:', error)
-    return [] // Return empty instead of crashing build
-  }
-}
-
-/**
- * Generate Metadata - SEO لكل منتج
- */
+// Metadata function
 export async function generateMetadata({ params }) {
   const { id } = params
   
   try {
-    const product = await getProductById(id, true)
+    const product = await getProductById(id)
     
     if (!product) {
       return {
@@ -89,39 +53,22 @@ export async function generateMetadata({ params }) {
     
     return {
       title: `${product.name} - ${price} LE${discountText} | Wn Store`,
-      description: product.description || `Shop ${product.name} at Wn Store. High-quality ${product.type} with fast delivery. Price: ${price} LE.`,
-      keywords: `${product.name}, ${product.type}, fashion, online shopping, Egypt, ${product.colors?.join(', ')}, ${product.sizes?.join(', ')}`,
+      description: product.description || `Shop ${product.name} at Wn Store.`,
       openGraph: {
         title: product.name,
         description: product.description || `Shop ${product.name} at Wn Store`,
-        type: 'product',
-        url: `https://your-domain.com/product/${id}`,
+        type: 'website',
+        url: `https://wn-store.vercel.app/product/${id}`,
+        siteName: 'Wn Store',
         images: product.pictures?.map(pic => ({
           url: pic,
           width: 800,
           height: 1000,
           alt: product.name
-        })) || [],
-        siteName: 'Wn Store'
-      },
-      twitter: {
-        card: 'summary_large_image',
-        title: product.name,
-        description: product.description || `Shop ${product.name} at Wn Store`,
-        images: product.pictures?.[0] ? [product.pictures[0]] : []
-      },
-      // Structured Data for Google Shopping
-      other: {
-        'product:price:amount': price.toString(),
-        'product:price:currency': 'EGP',
-        'product:availability': 'in stock',
-        'product:condition': 'new',
-        'product:brand': 'Wn Store'
+        })) || []
       }
     }
-    
   } catch (error) {
-    console.error(`❌ Error generating metadata for product ${id}:`, error)
     return {
       title: 'Product - Wn Store',
       description: 'Fashion product at Wn Store'
@@ -129,9 +76,5 @@ export async function generateMetadata({ params }) {
   }
 }
 
-/**
- * إعدادات الcache والأداء - محسنة لتجنب build timeout
- */
 export const dynamic = 'force-dynamic'
-export const revalidate = 0
-export const dynamicParams = true
+export const revalidate = 3600
