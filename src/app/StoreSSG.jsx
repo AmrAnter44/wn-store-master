@@ -200,7 +200,7 @@ export default function StoreSSG({
                         <span className="text-lg font-bold text">
                           {product.newprice} LE
                         </span>
-                        <span className="text-sm text-gray-500 line-through">
+                        <span className="text-sm text-gray-900 line-through">
                           {product.price} LE
                         </span>
                       </div>
@@ -462,7 +462,7 @@ export default function StoreSSG({
                           <span className="text-lg font-semibold text-gray-900">
                             {product.newprice} LE
                           </span>
-                          <span className="text-sm text-gray-800 line-through">
+                          <span className="text-sm text-gray-900 line-through">
                             {product.price} LE
                           </span>
                         </div>

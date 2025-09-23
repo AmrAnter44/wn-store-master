@@ -83,9 +83,10 @@ export default function Navbar() {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 transition={{ duration: 0.2 }}
-                aria-label="Contact us on WhatsApp"
+
               >
-                <Link href="https://wa.me/+201211661802" className="m-2">
+                <Link href="https://wa.me/+201211661802" aria-label="Contact us on WhatsApp" className="m-2">
+                
                   <FontAwesomeIcon
                     className={`fa-brands fa-whatsapp text-3xl w-9 ${
                       scrolled ? "bgg" : "text-white"
