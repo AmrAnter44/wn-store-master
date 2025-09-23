@@ -1,191 +1,421 @@
-
 "use client"
-import ProductDetailClient from './ProductDetailClient'
-import { getAllProducts, getProductById, getRelatedProducts } from '@/lib/productService'
-import { notFound } from 'next/navigation'
 
-/**
- * ✅ FIXED: Product Detail Page now uses REAL Supabase data
- */
-export default async function ProductDetailPage({ params }) {
-  const { id } = params
-  
-  try {
-    console.log(`📦 Loading product ${id} with REAL Supabase data...`)
-    
-    // ✅ FIXED: Remove buildMode - fetch REAL product data
-    const product = await getProductById(id)
-    
-    if (!product) {
-      console.log(`❌ Product ${id} not found in Supabase`)
-      notFound()
+import { useState, useEffect } from "react"
+import { useMyContext } from "../../../context/CartContext"
+import { motion, AnimatePresence } from "framer-motion"
+import toast from "react-hot-toast"
+import Image from "next/image"
+import RelatedProducts from "../../RelatedProducts"
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut",
+      staggerChildren: 0.1
+    }
+  }
+}
+
+const itemVariants = {
+  hidden: { 
+    opacity: 0, 
+    y: 20 
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut"
+    }
+  }
+}
+
+const buttonVariants = {
+  idle: { scale: 1 },
+  hover: {
+    scale: 1.02,
+    transition: { duration: 0.2, ease: "easeInOut" }
+  },
+  tap: { scale: 0.98 }
+}
+
+export default function ProductDetailClient({ 
+  productId, 
+  initialProduct, 
+  initialRelatedProducts = [] 
+}) {
+  const { addToCart } = useMyContext()
+  const [product, setProduct] = useState(initialProduct)
+  const [selectedColor, setSelectedColor] = useState("")
+  const [selectedSize, setSelectedSize] = useState("")
+  const [quantity, setQuantity] = useState(1)
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
+  const [loading, setLoading] = useState(false)
+
+  // Initialize selected color and size
+  useEffect(() => {
+    if (product) {
+      if (product.colors && product.colors.length > 0 && !selectedColor) {
+        setSelectedColor(product.colors[0])
+      }
+      if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+        setSelectedSize(product.sizes[0])
+      }
+    }
+  }, [product, selectedColor, selectedSize])
+
+  // Handle add to cart
+  const handleAddToCart = async () => {
+    if (!product) return
+
+    // Validation
+    if (product.colors && product.colors.length > 0 && !selectedColor) {
+      toast.error("Please select a color")
+      return
     }
 
-    console.log(`✅ Loaded REAL product: ${product.name}`)
-    console.log(`   - Price: ${product.price} LE`)
-    console.log(`   - Type: ${product.type}`)
-    console.log(`   - Colors: ${product.colors?.join(', ') || 'None'}`)
-    console.log(`   - Sizes: ${product.sizes?.join(', ') || 'None'}`)
+    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+      toast.error("Please select a size")
+      return
+    }
 
-    // ✅ FIXED: Fetch REAL related products
-    const relatedProducts = await getRelatedProducts(product, 8)
+    setLoading(true)
 
-    console.log(`✅ Found ${relatedProducts.length} related products`)
+    try {
+      const productToAdd = {
+        ...product,
+        selectedColor,
+        selectedSize,
+        quantity
+      }
 
+      await addToCart(productToAdd)
+      toast.success(`Added ${quantity}x ${product.name} to cart!`)
+
+      // Reset quantity
+      setQuantity(1)
+      
+    } catch (error) {
+      console.error("Error adding to cart:", error)
+      toast.error("Failed to add to cart. Please try again.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (!product) {
     return (
-      <div className="min-h-screen pt-16">
-        <ProductDetailClient 
-          productId={id} 
-          initialProduct={product}
-          initialRelatedProducts={relatedProducts}
-        />
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
+          <p className="text-gray-600">The product you're looking for doesn't exist.</p>
+        </div>
       </div>
     )
-    
-  } catch (error) {
-    console.error(`❌ Error loading product ${id}:`, error)
-    notFound()
   }
+
+  const currentPrice = product.newprice || product.price
+  const originalPrice = product.price
+  const hasDiscount = product.newprice && product.newprice < product.price
+  const discountPercentage = hasDiscount 
+    ? Math.round(((originalPrice - product.newprice) / originalPrice) * 100)
+    : 0
+
+  return (
+    <motion.div
+      className="container mx-auto px-4 py-8"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+      suppressHydrationWarning
+    >
+      {/* Breadcrumb */}
+      <motion.nav 
+        className="mb-8 text-sm text-gray-600"
+        variants={itemVariants}
+      >
+        <span>Home</span> / <span>Products</span> / <span className="text-gray-900">{product.name}</span>
+      </motion.nav>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+        {/* Product Images - Fixed without Swiper for SSR compatibility */}
+        <motion.div variants={itemVariants} className="space-y-4">
+          {/* Main Image Display */}
+          <div className="relative rounded-2xl overflow-hidden bg-gray-50 aspect-[4/5] w-full">
+            <Image
+              src={product.pictures?.[activeImageIndex] || product.pictures?.[0] || 'https://dfurfmrwpyotjfrryatn.supabase.co/storage/v1/object/public/product-images/casual.png'}
+              alt={`${product.name} - Image ${activeImageIndex + 1}`}
+              fill
+              className="object-cover"
+              priority
+              sizes="(max-width: 768px) 100vw, 50vw"
+              onError={(e) => {
+                e.target.src = 'https://dfurfmrwpyotjfrryatn.supabase.co/storage/v1/object/public/product-images/casual.png'
+              }}
+            />
+
+            {/* Discount Badge */}
+            {hasDiscount && (
+              <motion.div
+                className="absolute top-4 left-4 bg z-10 text-white px-3 py-1 rounded-full text-sm font-bold"
+                initial={{ scale: 0, rotate: -12 }}
+                animate={{ scale: 1, rotate: -12 }}
+                transition={{ duration: 0.3, delay: 0.2 }}
+              >
+                {discountPercentage}% OFF
+              </motion.div>
+            )}
+
+            {/* Navigation Arrows for Images */}
+            {product.pictures && product.pictures.length > 1 && (
+              <>
+                <button
+                  onClick={() => setActiveImageIndex(prev => 
+                    prev === 0 ? product.pictures.length - 1 : prev - 1
+                  )}
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg transition-all z-10"
+                >
+                  ←
+                </button>
+                <button
+                  onClick={() => setActiveImageIndex(prev => 
+                    prev === product.pictures.length - 1 ? 0 : prev + 1
+                  )}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg transition-all z-10"
+                >
+                  →
+                </button>
+
+                {/* Image Indicators */}
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                  {product.pictures.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setActiveImageIndex(index)}
+                      className={`w-2 h-2 rounded-full transition-all ${
+                        activeImageIndex === index ? 'bg-white' : 'bg-white/50'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Thumbnail Images */}
+          {product.pictures && product.pictures.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {product.pictures.map((image, index) => (
+                <motion.button
+                  key={index}
+                  className={`flex-shrink-0 w-20 h-24 rounded-lg overflow-hidden border-2 transition-colors ${
+                    activeImageIndex === index 
+                      ? 'border-black' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => setActiveImageIndex(index)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Image
+                    src={image}
+                    alt={`${product.name} thumbnail ${index + 1}`}
+                    width={80}
+                    height={96}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src = 'https://dfurfmrwpyotjfrryatn.supabase.co/storage/v1/object/public/product-images/casual.png'
+                    }}
+                  />
+                </motion.button>
+              ))}
+            </div>
+          )}
+        </motion.div>
+
+        {/* Product Info */}
+        <motion.div variants={itemVariants} className="space-y-6">
+          {/* Product Name */}
+          <div>
+            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+              {product.name}
+            </h1>
+            <p className="text-gray-600 capitalize">{product.type}</p>
+          </div>
+
+          {/* Price */}
+          <div className="flex items-center gap-3">
+            <span className="text-3xl font-bold text-gray-900">
+              {currentPrice} LE
+            </span>
+            {hasDiscount && (
+              <>
+                <span className="text-xl text-gray-500 line-through">
+                  {originalPrice} LE
+                </span>
+                <span className="bg text-white px-2 py-1 rounded text-sm font-medium">
+                  Save {originalPrice - product.newprice} LE
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* Description */}
+          {product.description && (
+            <div className="prose prose-gray max-w-none">
+              <p className="text-gray-700">{product.description}</p>
+            </div>
+          )}
+
+          {/* Color Selection */}
+          {product.colors && product.colors.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Color: <span className="font-normal capitalize">{selectedColor}</span>
+              </h3>
+              <div className="flex gap-3 flex-wrap">
+                {product.colors.map((color) => (
+                  <motion.button
+                    key={color}
+                    className={`w-12 h-12 rounded-full border-4 transition-all ${
+                      selectedColor === color 
+                        ? 'border-black shadow-lg' 
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => setSelectedColor(color)}
+                    variants={buttonVariants}
+                    initial="idle"
+                    whileHover="hover"
+                    whileTap="tap"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Size Selection */}
+          {product.sizes && product.sizes.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Size: <span className="font-normal">{selectedSize}</span>
+              </h3>
+              <div className="flex gap-2 flex-wrap">
+                {product.sizes.map((size) => (
+                  <motion.button
+                    key={size}
+                    className={`px-4 py-2 rounded-lg border-2 font-medium transition-all ${
+                      selectedSize === size
+                        ? 'border-black bg-black text-white'
+                        : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                    }`}
+                    onClick={() => setSelectedSize(size)}
+                    variants={buttonVariants}
+                    initial="idle"
+                    whileHover="hover"
+                    whileTap="tap"
+                  >
+                    {size}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Quantity */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-gray-900">Quantity</h3>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center border border-gray-300 rounded-lg">
+                <motion.button
+                  className="px-4 py-2 hover:bg-gray-50 transition-colors"
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  -
+                </motion.button>
+                <span className="px-4 py-2 font-medium">{quantity}</span>
+                <motion.button
+                  className="px-4 py-2 hover:bg-gray-50 transition-colors"
+                  onClick={() => setQuantity(quantity + 1)}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  +
+                </motion.button>
+              </div>
+            </div>
+          </div>
+
+          {/* Add to Cart */}
+          <div className="space-y-4 pt-6">
+            <motion.button
+              className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all ${
+                loading
+                  ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                  : 'bg-black text-white hover:bg-gray-800'
+              }`}
+              onClick={handleAddToCart}
+              disabled={loading}
+              variants={buttonVariants}
+              initial="idle"
+              whileHover={!loading ? "hover" : {}}
+              whileTap={!loading ? "tap" : {}}
+            >
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={loading ? "loading" : "idle"}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <motion.div
+                        className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      />
+                      Adding to Cart...
+                    </>
+                  ) : (
+                    `Add to Cart - ${(currentPrice * quantity).toLocaleString()} LE`
+                  )}
+                </motion.span>
+              </AnimatePresence>
+            </motion.button>
+
+            {/* Product Features */}
+            <div className="grid grid-cols-2 gap-4 pt-4 text-sm text-gray-600">
+              <div className="flex items-center gap-2">
+                <span>✨</span>
+                <span>High Quality</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span>🚚</span>
+                <span>Fast Delivery</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span>💯</span>
+                <span>Authentic</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span>🔄</span>
+                <span>Easy Returns</span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Related Products */}
+      <RelatedProducts currentProduct={product} />
+    </motion.div>
+  )
 }
-
-/**
- * ✅ FIXED: Generate Static Params with REAL Supabase data
- */
-export async function generateStaticParams() {
-  try {
-    console.log('📋 Generating static params with REAL Supabase products...')
-    
-    // ✅ FIXED: Get REAL products from Supabase (no build mode)
-    const products = await getAllProducts(false)
-    
-    if (!products || products.length === 0) {
-      console.log('⚠️ No products found in Supabase for static generation')
-      return []
-    }
-    
-    console.log(`📋 Found ${products.length} REAL products in Supabase`)
-    
-    // Generate static params for all products (or limit if needed)
-    const limitedProducts = products.slice(0, 50) // First 50 products to avoid timeout
-    
-    console.log(`📋 Generating static params for ${limitedProducts.length} products`)
-    
-    const params = limitedProducts.map((product) => {
-      console.log(`   - Product: ${product.name} (ID: ${product.id})`)
-      return {
-        id: product.id.toString()
-      }
-    })
-
-    console.log(`✅ Generated ${params.length} static product pages with REAL data`)
-    return params
-    
-  } catch (error) {
-    console.error('❌ Error generating static params:', error)
-    return [] // Return empty instead of crashing build
-  }
-}
-
-/**
- * ✅ FIXED: Generate Metadata with CORRECTED OpenGraph type
- */
-export async function generateMetadata({ params }) {
-  const { id } = params
-  
-  try {
-    // ✅ FIXED: Get REAL product data for metadata
-    const product = await getProductById(id)
-    
-    if (!product) {
-      return {
-        title: 'Product Not Found - Wn Store',
-        description: 'The requested product could not be found.'
-      }
-    }
-
-    console.log(`✅ Generated metadata for REAL product: ${product.name}`)
-
-    const price = product.newprice || product.price
-    const discountText = product.newprice ? ` - ${Math.round((1 - product.newprice / product.price) * 100)}% OFF` : ''
-    
-    return {
-      title: `${product.name} - ${price} LE${discountText} | Wn Store`,
-      description: product.description || `Shop ${product.name} at Wn Store. High-quality ${product.type} with fast delivery. Price: ${price} LE.`,
-      keywords: `${product.name}, ${product.type}, fashion, online shopping, Egypt, ${product.colors?.join(', ') || ''}, ${product.sizes?.join(', ') || ''}`,
-      
-      // ✅ FIXED: Use 'website' instead of 'product' for OpenGraph type
-      openGraph: {
-        title: product.name,
-        description: product.description || `Shop ${product.name} at Wn Store`,
-        type: 'website', // ✅ FIXED: Changed from 'product' to 'website'
-        url: `https://wn-store.vercel.app/product/${id}`,
-        siteName: 'Wn Store',
-        images: product.pictures?.map(pic => ({
-          url: pic,
-          width: 800,
-          height: 1000,
-          alt: product.name
-        })) || []
-      },
-      
-      twitter: {
-        card: 'summary_large_image',
-        title: product.name,
-        description: product.description || `Shop ${product.name} at Wn Store`,
-        images: product.pictures?.[0] ? [product.pictures[0]] : []
-      },
-      
-      // ✅ ADDED: Product-specific meta tags for e-commerce SEO
-      other: {
-        'product:price:amount': price.toString(),
-        'product:price:currency': 'EGP',
-        'product:availability': 'in stock',
-        'product:condition': 'new',
-        'product:brand': 'Wn Store',
-        'product:category': product.type || 'fashion',
-        // Schema.org structured data
-        'application/ld+json': JSON.stringify({
-          '@context': 'https://schema.org/',
-          '@type': 'Product',
-          'name': product.name,
-          'image': product.pictures || [],
-          'description': product.description || `High-quality ${product.type} from Wn Store`,
-          'brand': {
-            '@type': 'Brand',
-            'name': 'Wn Store'
-          },
-          'offers': {
-            '@type': 'Offer',
-            'price': price,
-            'priceCurrency': 'EGP',
-            'availability': 'https://schema.org/InStock',
-            'condition': 'https://schema.org/NewCondition'
-          },
-          'category': product.type,
-          'color': product.colors?.[0] || undefined,
-          'size': product.sizes || undefined
-        })
-      }
-    }
-    
-  } catch (error) {
-    console.error(`❌ Error generating metadata for product ${id}:`, error)
-    return {
-      title: 'Product - Wn Store',
-      description: 'Fashion product at Wn Store',
-      openGraph: {
-        title: 'Product - Wn Store',
-        description: 'Fashion product at Wn Store',
-        type: 'website', // ✅ FIXED: Use 'website' type
-        siteName: 'Wn Store'
-      }
-    }
-  }
-}
-
-/**
- * ✅ FIXED: Cache settings for real data
- */
-export const dynamic = 'force-dynamic' // Allow real-time data fetching
-export const revalidate = 3600 // Revalidate every hour with fresh data
-export const dynamicParams = true // Allow dynamic product IDs
