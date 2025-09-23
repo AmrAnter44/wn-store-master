@@ -284,7 +284,18 @@ export default function ManageProducts() {
         return;
       }
 
-      setMessage("Product deleted successfully!");
+      // Trigger revalidation for SSG/ISR pages
+      try {
+        await fetch('/api/revalidate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'delete', productId: productToDelete.id })
+        });
+      } catch (revError) {
+        console.warn('Revalidation request failed:', revError);
+      }
+
+      setMessage("Product deleted successfully! Pages will update shortly.");
       fetchProducts();
       setTimeout(() => setMessage(""), 3000);
       
@@ -494,6 +505,17 @@ export default function ManageProducts() {
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.error || "Failed to update product");
+      }
+
+      // Trigger revalidation for SSG/ISR pages on update
+      try {
+        await fetch('/api/revalidate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'update', productId: editingProduct.id })
+        });
+      } catch (revError) {
+        console.warn('Revalidation request failed:', revError);
       }
 
       setEditingProduct(null);

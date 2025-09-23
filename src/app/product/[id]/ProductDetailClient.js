@@ -1,92 +1,64 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { supabase } from "@/lib/supabaseClient"
 import Image from "next/image"
-import RelatedProducts from "../../RelatedProducts"
+import Link from "next/link"
 import { useMyContext } from "../../../context/CartContext"
 import toast, { Toaster } from 'react-hot-toast'
 
-export default function ProductDetailClient({ productId }) {
+/**
+ * Product Detail Client Component محسن للـ SSG
+ * يستقبل البيانات من الserver component ويعرضها بدون API calls إضافية
+ */
+export default function ProductDetailClientSSG({ 
+  productId, 
+  initialProduct, 
+  initialRelatedProducts = [] 
+}) {
   const { addToCart } = useMyContext()
-  const [product, setProduct] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [selectedColor, setSelectedColor] = useState("")
-  const [selectedSize, setSelectedSize] = useState("")
-  const [selectedImage, setSelectedImage] = useState("")
+  const [selectedColor, setSelectedColor] = useState(initialProduct?.colors?.[0] || "")
+  const [selectedSize, setSelectedSize] = useState(
+    initialProduct?.type?.toLowerCase() === "bag" ? "" : (initialProduct?.sizes?.[0] || "")
+  )
+  const [selectedImage, setSelectedImage] = useState(initialProduct?.pictures?.[0] || "")
   const [added, setAdded] = useState(false)
+  const [hoveredId, setHoveredId] = useState(null)
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("id", productId)
-        .single()
-
-      if (error) {
-        console.error("Error fetching product:", error)
-        toast.error("Failed to load product")
-        return
-      }
-
-      setProduct(data)
-      setSelectedColor(data.colors?.[0] || "")
-      // Only set default size if product is not a bag
-      setSelectedSize(data.type?.toLowerCase() === "bag" ? "" : (data.sizes?.[0] || ""))
-      setSelectedImage(data.pictures?.[0] || "")
-      setLoading(false)
-    }
-
-    fetchProduct()
-  }, [productId])
+  console.log(`📦 ProductDetailClient rendered for: ${initialProduct?.name}`)
 
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        duration: 0.4,
-        staggerChildren: 0.1
-      }
+      transition: { duration: 0.4, staggerChildren: 0.1 }
     }
   }
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5 }
-    }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
   }
 
   const handleAddToCart = () => {
-    // Check if size is required (not for bags) and not selected
-    const isBag = product.type?.toLowerCase() === "bag"
+    const isBag = initialProduct.type?.toLowerCase() === "bag"
+    
     if (!isBag && !selectedSize) {
       toast.error("⚠️ Please select a size first!", {
         duration: 3000,
-        style: {
-          background: '#EF4444',
-          color: 'white',
-        }
+        style: { background: '#EF4444', color: 'white' }
       })
       return
     }
 
     try {
-      addToCart({ ...product, selectedColor, selectedSize })
+      addToCart({ ...initialProduct, selectedColor, selectedSize })
       setAdded(true)
       
-      toast.success(`🛒 ${product.name} added to cart!`, {
+      toast.success(`🛒 ${initialProduct.name} added to cart!`, {
         duration: 2000,
-        style: {
-          background: '#10B981',
-          color: 'white',
-        }
+        style: { background: '#10B981', color: 'white' }
       })
 
       setTimeout(() => setAdded(false), 2000)
@@ -95,20 +67,28 @@ export default function ProductDetailClient({ productId }) {
     }
   }
 
-  if (loading) {
+  // Product Image Component with hover effect
+  const ProductImage = ({ product, hoveredId, className, priority = false }) => {
+    const [imageSrc, setImageSrc] = useState(selectedImage)
+
+    const handleError = () => {
+      setImageSrc('https://dfurfmrwpyotjfrryatn.supabase.co/storage/v1/object/public/product-images/casual.png')
+    }
+
     return (
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="flex justify-center items-center min-h-screen"
-      >
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
-        <span className="ml-3 text-gray-600">Loading product...</span>
-      </motion.div>
+      <Image
+        src={imageSrc}
+        alt={product.name}
+        fill
+        className={className}
+        onError={handleError}
+        sizes="(max-width: 640px) 100vw, 50vw"
+        priority={priority}
+      />
     )
   }
 
-  if (!product) {
+  if (!initialProduct) {
     return (
       <motion.div 
         initial={{ opacity: 0 }}
@@ -118,29 +98,20 @@ export default function ProductDetailClient({ productId }) {
         <div className="text-4xl mb-4">😢</div>
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Product not found</h2>
         <p className="text-gray-600">The product you're looking for doesn't exist.</p>
+        <Link href="/store">
+          <button className="mt-4 px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors">
+            Back to Store
+          </button>
+        </Link>
       </motion.div>
     )
   }
 
-  // Check if product is a bag
-  const isBag = product.type?.toLowerCase() === "bag"
+  const isBag = initialProduct.type?.toLowerCase() === "bag"
 
   return (
     <>
-      <Toaster 
-        position="top-right"
-        reverseOrder={false}
-        gutter={8}
-        containerClassName=""
-        containerStyle={{}}
-        toastOptions={{
-          duration: 3000,
-          style: {
-            borderRadius: '12px',
-            fontWeight: '500',
-          },
-        }}
-      />
+      <Toaster position="top-right" />
       
       <motion.div 
         className="max-w-6xl mx-auto p-6"
@@ -149,20 +120,14 @@ export default function ProductDetailClient({ productId }) {
         animate="visible"
       >
         <motion.div 
-          className="p-6 flex flex-col lg:flex-row gap-8  rounded-2xl "
+          className="p-6 flex flex-col lg:flex-row gap-8 rounded-2xl"
           variants={itemVariants}
         >
           {/* صور المنتج */}
-          <motion.div 
-            className="flex flex-col-reverse lg:w-1/2"
-            variants={itemVariants}
-          >
+          <motion.div className="flex flex-col-reverse lg:w-1/2" variants={itemVariants}>
             {/* Thumbnails */}
-            <motion.div 
-              className="flex gap-3 mt-4 overflow-x-auto pb-2"
-              variants={itemVariants}
-            >
-              {product.pictures?.map((img, idx) => (
+            <motion.div className="flex gap-3 mt-4 overflow-x-auto pb-2" variants={itemVariants}>
+              {initialProduct.pictures?.map((img, idx) => (
                 <motion.div
                   key={idx}
                   onClick={() => setSelectedImage(img)}
@@ -174,7 +139,7 @@ export default function ProductDetailClient({ productId }) {
                 >
                   <Image 
                     src={img} 
-                    alt={`${product.name} ${idx + 1}`} 
+                    alt={`${initialProduct.name} ${idx + 1}`} 
                     width={60} 
                     height={80}
                     className="object-cover"
@@ -196,7 +161,7 @@ export default function ProductDetailClient({ productId }) {
               >
                 <Image 
                   src={selectedImage} 
-                  alt={product.name} 
+                  alt={initialProduct.name} 
                   width={500} 
                   height={600}
                   className="w-full object-cover"
@@ -207,55 +172,46 @@ export default function ProductDetailClient({ productId }) {
           </motion.div>
 
           {/* تفاصيل المنتج */}
-          <motion.div 
-            className="flex flex-col gap-6 lg:w-1/2"
-            variants={itemVariants}
-          >
+          <motion.div className="flex flex-col gap-6 lg:w-1/2" variants={itemVariants}>
             <motion.div variants={itemVariants}>
-              <h1 className="text-3xl font-bold text-gray-900 mb-3">{product.name}</h1>
-              <p className="text-gray-600 text-lg leading-relaxed">{product.description}</p>
+              <h1 className="text-3xl font-bold text-gray-900 mb-3">{initialProduct.name}</h1>
+              <p className="text-gray-600 text-lg leading-relaxed">{initialProduct.description}</p>
             </motion.div>
 
             {/* السعر */}
-            <motion.div 
-              className="flex items-center gap-4"
-              variants={itemVariants}
-            >
-              {product.newprice ? (
+            <motion.div className="flex items-center gap-4" variants={itemVariants}>
+              {initialProduct.newprice ? (
                 <>
                   <span className="text-3xl font-bold text-gray-900">
-                    {product.newprice} LE
+                    {initialProduct.newprice} LE
                   </span>
                   <span className="text-xl text-gray-500 line-through">
-                    {product.price} LE
+                    {initialProduct.price} LE
                   </span>
                   <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-medium">
-                    {Math.round((1 - product.newprice / product.price) * 100)}% OFF
+                    {Math.round((1 - initialProduct.newprice / initialProduct.price) * 100)}% OFF
                   </span>
                 </>
               ) : (
                 <span className="text-3xl font-bold text-gray-900">
-                  {product.price} LE
+                  {initialProduct.price} LE
                 </span>
               )}
             </motion.div>
 
             {/* ألوان */}
-            {product.colors && product.colors.length > 0 && (
+            {initialProduct.colors && initialProduct.colors.length > 0 && (
               <motion.div variants={itemVariants}>
                 <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
                   Color: {selectedColor}
                 </h3>
                 <div className="flex gap-3">
-                  {product.colors.map((color, idx) => {
+                  {initialProduct.colors.map((color, idx) => {
                     const isSelected = selectedColor === color
                     return (
                       <motion.button
                         key={idx}
-                        onClick={() => {
-                          setSelectedColor(color)
-                          // Removed the image changing logic when color changes
-                        }}
+                        onClick={() => setSelectedColor(color)}
                         className={`w-6 h-6 rounded-full border-2 transition-all ${
                           isSelected ? "border-black scale-110" : "border-gray-300 hover:border-gray-400"
                         }`}
@@ -286,7 +242,7 @@ export default function ProductDetailClient({ productId }) {
                 </h3>
                 <div className="flex gap-3">
                   {["S", "M", "L", "XL"].map((size) => {
-                    const isAvailable = product.sizes?.includes(size)
+                    const isAvailable = initialProduct.sizes?.includes(size)
                     const isSelected = selectedSize === size
                     return (
                       <motion.button
@@ -372,13 +328,182 @@ export default function ProductDetailClient({ productId }) {
           </motion.div>
         </motion.div>
 
-        {/* Related Products */}
-        <motion.div
-          variants={itemVariants}
-          transition={{ delay: 0.3 }}
-        >
-          <RelatedProducts currentProduct={product} />
-        </motion.div>
+        {/* Related Products Section - Using initial data */}
+        {initialRelatedProducts.length > 0 && (
+          <motion.div
+            variants={itemVariants}
+            transition={{ delay: 0.3 }}
+            className="mt-12 mx-auto"
+          >
+            {/* Header */}
+            <motion.div 
+              className="bg-white rounded-xl shadow-sm p-6 mb-8"
+              variants={itemVariants}
+            >
+              <h3 className="text-2xl font-semibold text-gray-900 mb-2">
+                You Might Also Like
+              </h3>
+              <p className="text-gray-600 text-sm">
+                Similar products based on your current selection
+              </p>
+            </motion.div>
+            
+            {/* Grid */}
+            <motion.div 
+              className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+              variants={containerVariants}
+            >
+              {initialRelatedProducts.map((product, index) => (
+                <motion.div
+                  key={product.id}
+                  variants={itemVariants}
+                  whileHover={{ y: -4 }}
+                  className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
+                  onMouseEnter={() => setHoveredId(product.id)}
+                  onMouseLeave={() => setHoveredId(null)}
+                >
+                  {/* صورة المنتج */}
+                  <div className="relative overflow-hidden bg-gray-50">
+                    <Image
+                      src={
+                        hoveredId === product.id
+                          ? product.pictures?.[1] || product.pictures?.[0]
+                          : product.pictures?.[0] || "/placeholder.png"
+                      }
+                      alt={product.name}
+                      className="w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      width={300}
+                      height={400}
+                    />
+
+                    {/* Badge للمنتجات المخفضة */}
+                    {product.newprice && (
+                      <motion.div
+                        initial={{ scale: 0, rotate: -12 }}
+                        animate={{ scale: 1, rotate: -12 }}
+                        transition={{ duration: 0.3, delay: 0.2 }}
+                        className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium"
+                      >
+                        Sale
+                      </motion.div>
+                    )}
+
+                    {/* نقاط الألوان */}
+                    {product.colors?.length > 1 && (
+                      <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3, delay: 0.2 }}
+                        className="absolute bottom-3 right-3 flex gap-1"
+                      >
+                        {product.colors.slice(0, 3).map((color, idx) => (
+                          <motion.div
+                            key={idx}
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ 
+                              duration: 0.2, 
+                              delay: 0.3 + (idx * 0.1),
+                              ease: "easeOut"
+                            }}
+                            whileHover={{ scale: 1.3 }}
+                            className="w-3 h-3 rounded-full border-2 border-white shadow-sm"
+                            style={{ backgroundColor: color }}
+                          />
+                        ))}
+                        {product.colors.length > 3 && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 0.2, delay: 0.6 }}
+                            className="w-3 h-3 rounded-full bg-gray-400 border-2 border-white shadow-sm flex items-center justify-center"
+                          >
+                            <span className="text-white text-xs font-bold">+</span>
+                          </motion.div>
+                        )}
+                      </motion.div>
+                    )}
+                  </div>
+
+                  {/* معلومات المنتج */}
+                  <div className="p-5">
+                    <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
+                      {product.name.length > 40
+                        ? product.name.slice(0, 40) + "..."
+                        : product.name}
+                    </h3>
+                    
+                    {/* السعر */}
+                    <div className="flex items-center justify-between mb-4">
+                      {product.newprice ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg font-semibold text-gray-900">
+                            {product.newprice} LE
+                          </span>
+                          <span className="text-sm text-gray-500 line-through">
+                            {product.price} LE
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-lg font-semibold text-gray-900">
+                          {product.price} LE
+                        </span>
+                      )}
+                    </div>
+
+                    {/* المقاسات المتاحة */}
+                    {product.sizes && product.sizes.length > 0 && (
+                      <div className="flex gap-1 mb-4">
+                        {product.sizes.slice(0, 4).map((size, idx) => (
+                          <motion.span
+                            key={idx}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: idx * 0.1 }}
+                            className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded"
+                          >
+                            {size}
+                          </motion.span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* زرار المشاهدة */}
+                    <Link href={`/product/${product.id}`}>
+                      <motion.button 
+                        className="w-full bg-black text-white py-2.5 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        View Details
+                      </motion.button>
+                    </Link>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* زرار عرض المزيد */}
+            {initialRelatedProducts.length >= 8 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.6 }}
+                className="text-center mt-8"
+              >
+                <Link href="/store">
+                  <motion.button
+                    className="px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-black hover:text-black transition-colors font-medium"
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    View More Products
+                  </motion.button>
+                </Link>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
       </motion.div>
     </>
   )

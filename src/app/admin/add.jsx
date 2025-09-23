@@ -1,9 +1,10 @@
-"use client";
-import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
-import { motion, AnimatePresence } from "framer-motion";
+"use client"
 
-// Animation variants (same as before)
+import { useState } from "react"
+import { supabase } from "@/lib/supabaseClient"
+import { motion, AnimatePresence } from "framer-motion"
+
+// Animation variants (same as original)
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -14,319 +15,238 @@ const containerVariants = {
       staggerChildren: 0.05
     }
   }
-};
+}
 
 const inputVariants = {
-  hidden: { 
-    opacity: 0, 
-    y: 20 
-  },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.4,
-      ease: "easeOut"
-    }
+    transition: { duration: 0.4, ease: "easeOut" }
   }
-};
+}
 
-const dropdownVariants = {
-  hidden: {
-    opacity: 0,
-    height: 0,
-    scale: 0.95
-  },
-  visible: {
-    opacity: 1,
-    height: "auto",
-    scale: 1,
-    transition: {
-      duration: 0.3,
-      ease: "easeOut"
-    }
-  },
-  exit: {
-    opacity: 0,
-    height: 0,
-    scale: 0.95,
-    transition: {
-      duration: 0.2,
-      ease: "easeIn"
-    }
-  }
-};
-
-const previewVariants = {
-  hidden: {
-    opacity: 0,
-    scale: 0.8,
-    y: 20
-  },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: {
-      duration: 0.4,
-      ease: "easeOut"
-    }
-  }
-};
-
-const buttonVariants = {
-  idle: {
-    scale: 1
-  },
-  hover: {
-    scale: 1.02,
-    transition: {
-      duration: 0.2,
-      ease: "easeInOut"
-    }
-  },
-  tap: {
-    scale: 0.98
-  },
-  loading: {
-    scale: 1,
-    opacity: 0.7
-  }
-};
-
-const messageVariants = {
-  hidden: {
-    opacity: 0,
-    y: -10
-  },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.3,
-      ease: "easeOut"
-    }
-  }
-};
-
-const loadingVariants = {
-  animate: {
-    rotate: 360,
-    transition: {
-      duration: 1,
-      repeat: Infinity,
-      ease: "linear"
-    }
-  }
-};
-
-export default function AddProduct() {
-  const [name, setName] = useState("");
-  const [price, setPrice] = useState("");
-  const [description, setDescription] = useState("");
-  const [files, setFiles] = useState([]);
-  const [previewUrls, setPreviewUrls] = useState([]);
-  const [colors, setColors] = useState([]);
-  const [sizes, setSizes] = useState([]);
-  const [type, setType] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [showColorOptions, setShowColorOptions] = useState(false);
-  const [newprice, setNewprice] = useState("");
-  const [uploadingImages, setUploadingImages] = useState(false);
+/**
+ * AddProduct مع Manual Revalidation
+ */
+export default function AddProductWithRevalidation() {
+  const [name, setName] = useState("")
+  const [price, setPrice] = useState("")
+  const [description, setDescription] = useState("")
+  const [files, setFiles] = useState([])
+  const [previewUrls, setPreviewUrls] = useState([])
+  const [colors, setColors] = useState([])
+  const [sizes, setSizes] = useState([])
+  const [type, setType] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState("")
+  const [showColorOptions, setShowColorOptions] = useState(false)
+  const [newprice, setNewprice] = useState("")
+  const [uploadingImages, setUploadingImages] = useState(false)
 
   const colorOptions = [
     "white","black","red","blue","green","yellow","orange","purple",
     "pink","brown","gray","beige","cyan","magenta","lime","indigo",
     "violet","turquoise","gold","silver","navy","maroon","olive","teal"
-  ];
-  const sizeOptions = ["S", "M", "L", "XL"];
-  const typeOptions = ["dress", "casual", "Bag"];
+  ]
+  const sizeOptions = ["S", "M", "L", "XL"]
+  const typeOptions = ["dress", "casual", "bag"]
 
-  // Check if current type is bag
-  const isBag = type.toLowerCase() === "bag";
+  const isBag = type.toLowerCase() === "bag"
 
   const handleCheckboxChange = (value, state, setState) => {
     if (state.includes(value)) {
-      setState(state.filter((v) => v !== value));
+      setState(state.filter((v) => v !== value))
     } else {
-      setState([...state, value]);
+      setState([...state, value])
     }
-  };
+  }
 
-  // Clear sizes when type changes to bag
   const handleTypeChange = (newType) => {
-    setType(newType);
+    setType(newType)
     if (newType.toLowerCase() === "bag") {
-      setSizes([]);
+      setSizes([])
     }
-  };
+  }
 
   // Image resize function
   const resizeImage = (file, targetWidth = 768, targetHeight = 950) => {
     return new Promise((resolve) => {
-      const img = new Image();
-      const reader = new FileReader();
+      const img = new Image()
+      const reader = new FileReader()
 
       reader.onload = (e) => { 
-        img.src = e.target.result; 
-      };
+        img.src = e.target.result 
+      }
 
       img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
+        const canvas = document.createElement("canvas")
+        const ctx = canvas.getContext("2d")
         
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
+        canvas.width = targetWidth
+        canvas.height = targetHeight
         
-        ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+        ctx.drawImage(img, 0, 0, targetWidth, targetHeight)
         
         canvas.toBlob((blob) => {
           const resizedFile = new File([blob], file.name, { 
             type: file.type,
             lastModified: Date.now()
-          });
-          resolve(resizedFile);
-        }, file.type, 0.8); // 0.8 quality for better compression
-      };
+          })
+          resolve(resizedFile)
+        }, file.type, 0.8)
+      }
 
-      reader.readAsDataURL(file);
-    });
-  };
+      reader.readAsDataURL(file)
+    })
+  }
 
   const handleFileChange = async (e) => {
-    const selectedFiles = Array.from(e.target.files);
-    if (selectedFiles.length === 0) return;
+    const selectedFiles = Array.from(e.target.files)
+    if (selectedFiles.length === 0) return
 
-    setUploadingImages(true);
-    setMessage("Processing images...");
+    setUploadingImages(true)
+    setMessage("Processing images...")
 
     try {
-      const resizedFiles = [];
-      const previews = [];
+      const resizedFiles = []
+      const previews = []
 
       for (let file of selectedFiles) {
         if (!file.type.startsWith('image/')) {
-          console.warn(`Skipping non-image file: ${file.name}`);
-          setMessage(`File ${file.name} is not an image`);
-          continue;
+          console.warn(`Skipping non-image file: ${file.name}`)
+          setMessage(`File ${file.name} is not an image`)
+          continue
         }
 
-        if (file.size > 5242880) { // 5MB
-          console.warn(`File too large: ${file.name}`);
-          setMessage(`File ${file.name} is too large (max 5MB)`);
-          continue;
+        if (file.size > 5242880) {
+          console.warn(`File too large: ${file.name}`)
+          setMessage(`File ${file.name} is too large (max 5MB)`)
+          continue
         }
 
-        // Resize the image using the new function
-        const resizedFile = await resizeImage(file);
-        resizedFiles.push(resizedFile);
+        const resizedFile = await resizeImage(file)
+        resizedFiles.push(resizedFile)
         
-        // Create preview from resized file
-        const previewUrl = URL.createObjectURL(resizedFile);
-        previews.push(previewUrl);
+        const previewUrl = URL.createObjectURL(resizedFile)
+        previews.push(previewUrl)
       }
 
-      // Add new images to existing images instead of replacing them
-      setFiles(prevFiles => [...prevFiles, ...resizedFiles]);
-      setPreviewUrls(prevPreviews => [...prevPreviews, ...previews]);
-      setMessage("");
+      setFiles(prevFiles => [...prevFiles, ...resizedFiles])
+      setPreviewUrls(prevPreviews => [...prevPreviews, ...previews])
+      setMessage("")
     } catch (error) {
-      console.error('Image processing error:', error);
-      setMessage("Error processing images: " + error.message);
+      console.error('Image processing error:', error)
+      setMessage("Error processing images: " + error.message)
     } finally {
-      setUploadingImages(false);
-      // Reset input value to allow selecting same files again
-      e.target.value = '';
+      setUploadingImages(false)
+      e.target.value = ''
     }
-  };
+  }
 
   const removeImage = (indexToRemove) => {
-    // Remove URL from memory to avoid memory leaks
-    URL.revokeObjectURL(previewUrls[indexToRemove]);
+    URL.revokeObjectURL(previewUrls[indexToRemove])
     
-    setFiles(prevFiles => prevFiles.filter((_, index) => index !== indexToRemove));
-    setPreviewUrls(prevPreviews => prevPreviews.filter((_, index) => index !== indexToRemove));
-  };
+    setFiles(prevFiles => prevFiles.filter((_, index) => index !== indexToRemove))
+    setPreviewUrls(prevPreviews => prevPreviews.filter((_, index) => index !== indexToRemove))
+  }
 
   const uploadImages = async () => {
-    const pictureUrls = [];
+    const pictureUrls = []
 
     for (let file of files) {
       try {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`
 
         const { data, error } = await supabase.storage
           .from("product-images")
           .upload(fileName, file, {
             cacheControl: '3600',
             upsert: false
-          });
+          })
 
         if (error) {
-          console.error('Upload error for', file.name, ':', error);
-          
-          if (error.message.includes('Bucket not found')) {
-            setMessage('Storage bucket "product-images" not found. Please create it manually in Supabase Dashboard');
-            setTimeout(() => setMessage(""), 10000);
-            break;
-          } else if (error.message.includes('row-level security') || error.message.includes('RLS')) {
-            setMessage('RLS Policy Error: Please run the SQL commands to fix storage policies');
-            setTimeout(() => setMessage(""), 15000);
-            break;
-          } else if (error.message.includes('permission') || error.message.includes('denied')) {
-            setMessage('Permission denied. Please check your Supabase storage policies');
-            setTimeout(() => setMessage(""), 8000);
-            break;
-          } else {
-            setMessage(`Error uploading ${file.name}: ${error.message}`);
-            setTimeout(() => setMessage(""), 5000);
-          }
-          continue;
+          console.error('Upload error for', file.name, ':', error)
+          setMessage(`Error uploading ${file.name}: ${error.message}`)
+          continue
         }
 
         const { data: urlData } = supabase.storage
           .from('product-images')
-          .getPublicUrl(fileName);
+          .getPublicUrl(fileName)
 
         if (urlData?.publicUrl) {
-          pictureUrls.push(urlData.publicUrl);
+          pictureUrls.push(urlData.publicUrl)
         }
 
       } catch (error) {
-        console.error(`Error uploading ${file.name}:`, error);
-        setMessage(`Error uploading ${file.name}: ${error.message}`);
-        continue;
+        console.error(`Error uploading ${file.name}:`, error)
+        setMessage(`Error uploading ${file.name}: ${error.message}`)
+        continue
       }
     }
 
-    return pictureUrls;
-  };
+    return pictureUrls
+  }
+
+  /**
+   * Manual Revalidation بعد إضافة المنتج
+   */
+  const triggerRevalidation = async (productId) => {
+    try {
+      console.log('🔄 Triggering revalidation after product addition...')
+      
+      const response = await fetch('/api/revalidate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'add',
+          productId: productId,
+          paths: ['/', '/store'] // الصفحات اللي هتتحدث
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        console.log('✅ Revalidation successful:', result)
+        setMessage("✅ Product added and website updated successfully!")
+      } else {
+        console.error('❌ Revalidation failed:', result.error)
+        setMessage("⚠️ Product added but website update failed. Use 'Update Website' button.")
+      }
+
+    } catch (error) {
+      console.error('❌ Revalidation error:', error)
+      setMessage("⚠️ Product added but website update failed. Use 'Update Website' button.")
+    }
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
+    e.preventDefault()
+    setLoading(true)
+    setMessage("")
 
-    // For bags, sizes are not required
     if (!name || !price || colors.length === 0 || (!isBag && sizes.length === 0) || !type || files.length === 0) {
-      setMessage("Please fill in all required fields.");
-      setLoading(false);
-      return;
+      setMessage("Please fill in all required fields.")
+      setLoading(false)
+      return
     }
 
     try {
-      setMessage("Uploading images...");
-      const pictureUrls = await uploadImages();
+      setMessage("Uploading images...")
+      const pictureUrls = await uploadImages()
 
       if (pictureUrls.length === 0) {
-        setMessage("No images were uploaded successfully. Please try again.");
-        setLoading(false);
-        return;
+        setMessage("No images were uploaded successfully. Please try again.")
+        setLoading(false)
+        return
       }
 
-      setMessage("Creating product...");
+      setMessage("Creating product...")
 
       const product = {
         name,
@@ -335,54 +255,57 @@ export default function AddProduct() {
         description: description || "",
         pictures: pictureUrls,
         colors,
-        sizes: isBag ? [] : sizes, // Empty sizes array for bags
+        sizes: isBag ? [] : sizes,
         type,
         owner_id: "dev-user-123"
-      };
+      }
 
       const res = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(product),
-      });
+      })
 
-      const result = await res.json();
+      const result = await res.json()
 
       if (res.ok) {
-        setMessage("Product added successfully!");
+        // Get product ID from result (object now)
+        const productId = result?.id || 'new'
         
-        // Clean URLs from memory to avoid memory leaks
-        previewUrls.forEach(url => URL.revokeObjectURL(url));
+        // Clean URLs from memory
+        previewUrls.forEach(url => URL.revokeObjectURL(url))
         
         // Reset form
-        setName("");
-        setPrice("");
-        setNewprice("");
-        setDescription("");
-        setFiles([]);
-        setPreviewUrls([]);
-        setColors([]);
-        setSizes([]);
-        setType("");
+        setName("")
+        setPrice("")
+        setNewprice("")
+        setDescription("")
+        setFiles([])
+        setPreviewUrls([])
+        setColors([])
+        setSizes([])
+        setType("")
         
-        // Clear file input
-        const fileInput = document.querySelector('input[type="file"]');
-        if (fileInput) fileInput.value = '';
+        const fileInput = document.querySelector('input[type="file"]')
+        if (fileInput) fileInput.value = ''
         
-        setTimeout(() => setMessage(""), 5000);
+        // Trigger revalidation
+        await triggerRevalidation(productId)
+        
+        setTimeout(() => setMessage(""), 8000)
       } else {
-        setMessage("Error: " + (result.error || "Error adding product"));
-        setTimeout(() => setMessage(""), 5000);
+        setMessage("Error: " + (result.error || "Error adding product"))
+        setTimeout(() => setMessage(""), 5000)
       }
 
     } catch (err) {
-      console.error(err);
-      setMessage("Error: " + err.message);
-      setTimeout(() => setMessage(""), 5000);
+      console.error(err)
+      setMessage("Error: " + err.message)
+      setTimeout(() => setMessage(""), 5000)
     }
 
-    setLoading(false);
-  };
+    setLoading(false)
+  }
 
   return (
     <motion.form 
@@ -401,77 +324,87 @@ export default function AddProduct() {
         Add New Product
       </motion.h1>
 
+      {/* Product Name */}
       <motion.input 
         type="text" 
-        placeholder="Product Name" 
+        placeholder="Product Name *" 
         value={name} 
         onChange={(e) => setName(e.target.value)} 
-        className="p-2 border rounded-md w-full" 
+        className="p-3 border rounded-md w-full focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
         required 
         variants={inputVariants}
-        whileFocus={{
-          scale: 1.01,
-          borderColor: "#8b5cf6",
-          transition: { duration: 0.2 }
-        }}
       />
       
+      {/* Price */}
       <motion.input 
         type="number" 
-        placeholder="Price" 
+        placeholder="Price *" 
         value={price} 
         onChange={(e) => setPrice(e.target.value)} 
-        className="p-2 border rounded-md w-full" 
+        className="p-3 border rounded-md w-full focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
         required 
         variants={inputVariants}
-        whileFocus={{
-          scale: 1.01,
-          borderColor: "#8b5cf6",
-          transition: { duration: 0.2 }
-        }}
       />
       
+      {/* New Price */}
       <motion.input 
         type="number" 
-        placeholder="New Price (optional)" 
+        placeholder="Sale Price (optional)" 
         value={newprice} 
         onChange={(e) => setNewprice(e.target.value)} 
-        className="p-2 border rounded-md w-full" 
+        className="p-3 border rounded-md w-full focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
         variants={inputVariants}
-        whileFocus={{
-          scale: 1.01,
-          borderColor: "#8b5cf6",
-          transition: { duration: 0.2 }
-        }}
       />
       
+      {/* Description */}
       <motion.textarea 
         placeholder="Description (optional)" 
         value={description} 
         onChange={(e) => setDescription(e.target.value)} 
         rows={4} 
-        className="p-2 border rounded-md w-full" 
+        className="p-3 border rounded-md w-full focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-vertical" 
         variants={inputVariants}
-        whileFocus={{
-          scale: 1.01,
-          borderColor: "#8b5cf6",
-          transition: { duration: 0.2 }
-        }}
       />
+
+      {/* Type - Moved before sizes */}
+      <motion.div variants={inputVariants}>
+        <p className="mb-2 font-semibold text-gray-700">Type (required) *:</p>
+        <div className="flex flex-wrap gap-2">
+          {typeOptions.map((t) => (
+            <motion.button 
+              key={t} 
+              type="button" 
+              onClick={() => handleTypeChange(t)} 
+              className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
+                type === t 
+                  ? "bg-purple-600 text-white shadow-lg" 
+                  : "bg-gray-100 text-gray-700 hover:bg-purple-100 hover:text-purple-700"
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {t.charAt(0).toUpperCase() + t.slice(1)}
+            </motion.button>
+          ))}
+        </div>
+      </motion.div>
 
       {/* Colors */}
       <motion.div className="relative" variants={inputVariants}>
         <motion.button 
           type="button" 
           onClick={() => setShowColorOptions(!showColorOptions)} 
-          className="w-full border p-2 rounded-md text-left flex justify-between items-center"
+          className="w-full border-2 border-gray-300 p-3 rounded-md text-left flex justify-between items-center hover:border-purple-400 focus:border-purple-500 transition-colors"
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
         >
-          Colors (required) 
+          <span className="font-medium text-gray-700">
+            Colors * {colors.length > 0 && `(${colors.length} selected)`}
+          </span>
           <motion.span
             animate={{ rotate: showColorOptions ? 180 : 0 }}
             transition={{ duration: 0.2 }}
+            className="text-gray-500"
           >
             ▼
           </motion.span>
@@ -480,53 +413,40 @@ export default function AddProduct() {
         <AnimatePresence>
           {showColorOptions && (
             <motion.div
-              className="mt-2 border rounded-md p-2 flex flex-wrap gap-2 max-h-60 overflow-y-auto"
-              variants={dropdownVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
+              className="mt-2 border-2 border-gray-200 rounded-md p-3 bg-white shadow-lg max-h-60 overflow-y-auto"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
             >
-              {colorOptions.map((color) => (
-                <motion.label 
-                  key={color} 
-                  className="flex items-center gap-2 cursor-pointer transition-all hover:scale-105 p-1 rounded"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <input 
-                    type="checkbox" 
-                    className="w-4 h-4 accent-[#b09dc1da]" 
-                    checked={colors.includes(color)} 
-                    onChange={() => handleCheckboxChange(color, colors, setColors)} 
-                  />
-                  <span className="w-5 h-5 rounded border" style={{ backgroundColor: color }}></span>
-                  <span className="capitalize">{color}</span>
-                </motion.label>
-              ))}
+              <div className="grid grid-cols-3 gap-2">
+                {colorOptions.map((color, idx) => (
+                  <motion.label 
+                    key={color} 
+                    className="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-gray-50 transition-colors"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.2, delay: idx * 0.02 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <input 
+                      type="checkbox" 
+                      className="w-4 h-4 accent-purple-600" 
+                      checked={colors.includes(color)} 
+                      onChange={() => handleCheckboxChange(color, colors, setColors)} 
+                    />
+                    <span 
+                      className="w-5 h-5 rounded-full border-2 border-gray-300 shadow-sm" 
+                      style={{ backgroundColor: color }}
+                    ></span>
+                    <span className="capitalize text-sm">{color}</span>
+                  </motion.label>
+                ))}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
-
-      {/* Type - Moved before sizes so we can conditionally show sizes */}
-      <motion.div variants={inputVariants}>
-        <p className="mb-2 font-semibold">Type (required):</p>
-        <div className="flex flex-wrap gap-2">
-          {typeOptions.map((t) => (
-            <motion.button 
-              key={t} 
-              type="button" 
-              onClick={() => handleTypeChange(t)} 
-              className={`px-3 py-1 rounded-full transition-all duration-300 ${
-                type === t ? "bg-[#b09dc1da]" : "hover:bg-[#b09dc1da]"
-              }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {t}
-            </motion.button>
-          ))}
-        </div>
       </motion.div>
 
       {/* Sizes - Only show if not a bag */}
@@ -539,15 +459,17 @@ export default function AddProduct() {
             exit="hidden"
             transition={{ duration: 0.3 }}
           >
-            <p className="mb-2 font-semibold">Sizes (required):</p>
+            <p className="mb-2 font-semibold text-gray-700">Sizes (required) *:</p>
             <div className="flex flex-wrap gap-2">
               {sizeOptions.map((size) => (
                 <motion.button 
                   key={size} 
                   type="button" 
                   onClick={() => handleCheckboxChange(size, sizes, setSizes)} 
-                  className={`px-3 py-1 rounded-full transition-all duration-300 ${
-                    sizes.includes(size) ? "bg-[#b09dc1da]" : "hover:bg-[#b09dc1da]"
+                  className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
+                    sizes.includes(size) 
+                      ? "bg-purple-600 text-white shadow-lg" 
+                      : "bg-gray-100 text-gray-700 hover:bg-purple-100 hover:text-purple-700"
                   }`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -560,9 +482,9 @@ export default function AddProduct() {
         )}
       </AnimatePresence>
 
-      {/* Images */}
+      {/* Images Upload */}
       <motion.div variants={inputVariants}>
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-600 transition">
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-400 transition-colors">
           <input
             type="file"
             multiple
@@ -574,39 +496,40 @@ export default function AddProduct() {
           />
           <label 
             htmlFor="image-upload" 
-            className={`cursor-pointer text-purple-600 hover:text-purple-700 font-medium ${
+            className={`cursor-pointer text-purple-600 hover:text-purple-700 font-medium text-lg ${
               uploadingImages ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
             {uploadingImages ? (
               <span className="flex items-center justify-center gap-2">
                 <motion.div
-                  className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full"
-                  variants={loadingVariants}
-                  animate="animate"
+                  className="w-5 h-5 border-2 border-purple-600 border-t-transparent rounded-full"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 />
                 Processing Images...
               </span>
             ) : (
-              'Select Images (Required)'
+              '📷 Select Images *'
             )}
           </label>
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-sm text-gray-500 mt-2">
             Select multiple images (Max 5MB each)<br />
-            Images will be resized to 768x950px automatically<br />
+            Images will be automatically resized to 768x950px<br />
             You can add more images by selecting again
           </p>
         </div>
       </motion.div>
       
+      {/* Image Previews */}
       <AnimatePresence>
         {previewUrls.length > 0 && (
           <motion.div 
-            className="flex gap-2 flex-wrap mt-2"
-            variants={previewVariants}
-            initial="hidden"
-            animate="visible"
-            exit="hidden"
+            className="grid grid-cols-4 gap-3 mt-2"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.3 }}
           >
             {previewUrls.map((url, i) => (
               <motion.div
@@ -619,16 +542,14 @@ export default function AddProduct() {
               >
                 <img 
                   src={url} 
-                  alt={`preview-${i}`} 
-                  className="w-24 h-32 object-cover rounded-md" 
+                  alt={`Preview ${i + 1}`} 
+                  className="w-full h-24 object-cover rounded-lg border-2 border-gray-200" 
                 />
                 <motion.button
                   type="button"
                   onClick={() => removeImage(i)}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition opacity-0 group-hover:opacity-100"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 0, scale: 0.8 }}
-                  whileHover={{ opacity: 1, scale: 1 }}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold hover:bg-red-600 transition opacity-0 group-hover:opacity-100"
+                  whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
                   ×
@@ -642,37 +563,36 @@ export default function AddProduct() {
       {/* Messages */}
       <AnimatePresence>
         {message && (
-          <motion.p 
-            className={`text-center p-3 rounded ${
+          <motion.div 
+            className={`p-4 rounded-lg text-center font-medium ${
               message.includes("successfully") || message.includes("✅") 
-                ? "text-green-600 bg-green-50" 
+                ? "text-green-700 bg-green-50 border border-green-200" 
                 : message.includes("Processing") || message.includes("Uploading") || message.includes("Creating")
-                ? "text-blue-600 bg-blue-50"
-                : "text-red-600 bg-red-50"
+                ? "text-blue-700 bg-blue-50 border border-blue-200"
+                : "text-red-700 bg-red-50 border border-red-200"
             }`}
-            variants={messageVariants}
-            initial="hidden"
-            animate="visible"
-            exit="hidden"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
           >
             {message}
-          </motion.p>
+          </motion.div>
         )}
       </AnimatePresence>
 
+      {/* Submit Button */}
       <motion.button 
         type="submit" 
         disabled={loading || uploadingImages} 
-        className={`mt-3 py-3 rounded-md transition font-medium ${
+        className={`mt-4 py-4 px-6 rounded-lg font-semibold text-lg transition-all ${
           loading || uploadingImages
-            ? "bg-gray-400 text-white cursor-not-allowed"
-            : "bg-purple-600 hover:bg-purple-700 text-white"
+            ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+            : "bg-purple-600 hover:bg-purple-700 text-white shadow-lg hover:shadow-xl"
         }`}
-        variants={buttonVariants}
-        initial="idle"
-        animate={loading ? "loading" : "idle"}
-        whileHover={!loading && !uploadingImages ? "hover" : {}}
-        whileTap={!loading && !uploadingImages ? "tap" : {}}
+        variants={inputVariants}
+        whileHover={!loading && !uploadingImages ? { scale: 1.02, y: -2 } : {}}
+        whileTap={!loading && !uploadingImages ? { scale: 0.98 } : {}}
       >
         <AnimatePresence mode="wait">
           <motion.span
@@ -686,20 +606,34 @@ export default function AddProduct() {
             {loading ? (
               <>
                 <motion.div
-                  className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
-                  variants={loadingVariants}
-                  animate="animate"
+                  className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 />
                 Adding Product...
               </>
             ) : uploadingImages ? (
               "Processing Images..."
             ) : (
-              "Add Product"
+              "➕ Add Product"
             )}
           </motion.span>
         </AnimatePresence>
       </motion.button>
+
+      {/* Instructions */}
+      <motion.div 
+        className="mt-4 p-4 bg-gray-50 rounded-lg text-sm text-gray-600"
+        variants={inputVariants}
+      >
+        <h4 className="font-semibold mb-2">💡 Instructions:</h4>
+        <ul className="space-y-1 text-xs">
+          <li>• Fill all required fields marked with *</li>
+          <li>• For bags, sizes are not required</li>
+          <li>• Images will be automatically optimized</li>
+          <li>• After adding, the website will update automatically</li>
+        </ul>
+      </motion.div>
     </motion.form>
-  );
+  )
 }

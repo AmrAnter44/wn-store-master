@@ -4,7 +4,11 @@ export async function POST(req) {
   try {
     const body = await req.json()
 
-const { data, error } = await supabaseServer().from("products").insert([body])
+const { data, error } = await supabaseServer()
+  .from("products")
+  .insert([body])
+  .select()
+  .single()
 
     if (error) {
       console.error("Insert error:", error)
