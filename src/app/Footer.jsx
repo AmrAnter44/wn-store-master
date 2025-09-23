@@ -75,6 +75,7 @@ export default function Footer() {
             target="_blank"
             rel="noopener noreferrer"
             className="text-black hover:text-blue-600 transition-colors duration-200"
+            aria-label="Visit our Facebook page"
           >
             <Facebook size={22} />
           </motion.a>
@@ -87,6 +88,7 @@ export default function Footer() {
             target="_blank"
             rel="noopener noreferrer"
             className="text-black hover:text-pink-500 transition-colors duration-200"
+            aria-label="Visit our Instagram page"
           >
             <Instagram size={22} />
           </motion.a>
@@ -97,6 +99,7 @@ export default function Footer() {
             whileTap="tap"
             href="mailto:your@email.com"
             className="text-black hover:text-green-500 transition-colors duration-200"
+            aria-label="Send us an email"
           >
             <Mail size={22} />
           </motion.a>
@@ -104,7 +107,7 @@ export default function Footer() {
       </div >
             <p className="text-center bg w-full mt-3 text-black">
         Direct by{" "}
-        <a href="https://tamyaz.online/" className="text-black  ">
+        <a href="https://tamyaz.online/" className="text-black  " aria-label="tamyaz">
           Tamyaz
         </a>
       </p>
