@@ -308,8 +308,9 @@ export default function StoreSSG({
                 <button
                   className="p-3 rounded-full hover:bg-gray-100 transition-colors"
                   onClick={() => setShowFilters(!showFilters)}
+                  aria-label="Open menu"
                 >
-                  <FaFilterCircleXmark className="w-5 h-5" />
+                  {showFilters ? <FaFilterCircleXmark className="w-5 h-5" /> : <FaFilter className="w-5 h-5" />}
                 </button>
               </div>
             </div>
