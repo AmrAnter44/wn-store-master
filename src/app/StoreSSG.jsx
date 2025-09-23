@@ -309,7 +309,7 @@ export default function StoreSSG({
                   className="p-3 rounded-full hover:bg-gray-100 transition-colors"
                   onClick={() => setShowFilters(!showFilters)}
                 >
-                  {showFilters ? <FaFilterCircleXmark className="w-5 h-5" /> : <FaFilter className="w-5 h-5" />}
+                  <FaFilterCircleXmark className="w-5 h-5" />
                 </button>
               </div>
             </div>
