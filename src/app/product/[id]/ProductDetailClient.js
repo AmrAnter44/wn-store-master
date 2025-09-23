@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
@@ -8,8 +8,7 @@ import { useMyContext } from "../../../context/CartContext"
 import toast, { Toaster } from 'react-hot-toast'
 
 /**
- * Product Detail Client Component محسن للـ SSG
- * يستقبل البيانات من الserver component ويعرضها بدون API calls إضافية
+ * Product Detail Client Component محسن للـ SSG مع إصلاح prerender
  */
 export default function ProductDetailClientSSG({ 
   productId, 
@@ -17,13 +16,27 @@ export default function ProductDetailClientSSG({
   initialRelatedProducts = [] 
 }) {
   const { addToCart } = useMyContext()
-  const [selectedColor, setSelectedColor] = useState(initialProduct?.colors?.[0] || "")
-  const [selectedSize, setSelectedSize] = useState(
-    initialProduct?.type?.toLowerCase() === "bag" ? "" : (initialProduct?.sizes?.[0] || "")
-  )
-  const [selectedImage, setSelectedImage] = useState(initialProduct?.pictures?.[0] || "")
+  const [selectedColor, setSelectedColor] = useState("")
+  const [selectedSize, setSelectedSize] = useState("")
+  const [selectedImage, setSelectedImage] = useState("")
   const [added, setAdded] = useState(false)
   const [hoveredId, setHoveredId] = useState(null)
+  const [mounted, setMounted] = useState(false)
+
+  // Fix hydration and prerender issues
+  useEffect(() => {
+    setMounted(true)
+    
+    if (initialProduct) {
+      setSelectedColor(initialProduct.colors?.[0] || "")
+      setSelectedSize(
+        initialProduct.type?.toLowerCase() === "bag" 
+          ? "" 
+          : (initialProduct.sizes?.[0] || "")
+      )
+      setSelectedImage(initialProduct.pictures?.[0] || "")
+    }
+  }, [initialProduct])
 
   console.log(`📦 ProductDetailClient rendered for: ${initialProduct?.name}`)
 
@@ -42,6 +55,8 @@ export default function ProductDetailClientSSG({
   }
 
   const handleAddToCart = () => {
+    if (!mounted || !initialProduct) return
+    
     const isBag = initialProduct.type?.toLowerCase() === "bag"
     
     if (!isBag && !selectedSize) {
@@ -67,18 +82,38 @@ export default function ProductDetailClientSSG({
     }
   }
 
-  // Product Image Component with hover effect
-  const ProductImage = ({ product, hoveredId, className, priority = false }) => {
-    const [imageSrc, setImageSrc] = useState(selectedImage)
+  // Safe Product Image Component
+  const ProductImage = ({ product, isHovered, className, priority = false }) => {
+    const [imageSrc, setImageSrc] = useState("")
+    const [imageError, setImageError] = useState(false)
+
+    useEffect(() => {
+      if (!mounted || !product) return
+      
+      if (isHovered && product.pictures?.[1]) {
+        setImageSrc(product.pictures[1])
+      } else if (product.pictures?.[0]) {
+        setImageSrc(product.pictures[0])
+      } else {
+        setImageSrc("/placeholder.png")
+      }
+    }, [isHovered, product, mounted])
 
     const handleError = () => {
-      setImageSrc('https://dfurfmrwpyotjfrryatn.supabase.co/storage/v1/object/public/product-images/casual.png')
+      if (!imageError) {
+        setImageSrc('https://dfurfmrwpyotjfrryatn.supabase.co/storage/v1/object/public/product-images/casual.png')
+        setImageError(true)
+      }
+    }
+
+    if (!mounted || !imageSrc) {
+      return <div className={`bg-gray-200 ${className}`} />
     }
 
     return (
       <Image
         src={imageSrc}
-        alt={product.name}
+        alt={product?.name || "Product"}
         fill
         className={className}
         onError={handleError}
@@ -88,18 +123,28 @@ export default function ProductDetailClientSSG({
     )
   }
 
+  // Show loading during hydration
+  if (!mounted) {
+    return (
+      <div className="max-w-6xl mx-auto p-6 min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    )
+  }
+
+  // Product not found
   if (!initialProduct) {
     return (
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="p-10 text-center"
+        className="p-10 text-center min-h-screen flex flex-col items-center justify-center"
       >
         <div className="text-4xl mb-4">😢</div>
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Product not found</h2>
-        <p className="text-gray-600">The product you're looking for doesn't exist.</p>
+        <p className="text-gray-600 mb-6">The product you're looking for doesn't exist.</p>
         <Link href="/store">
-          <button className="mt-4 px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors">
+          <button className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors">
             Back to Store
           </button>
         </Link>
@@ -126,47 +171,51 @@ export default function ProductDetailClientSSG({
           {/* صور المنتج */}
           <motion.div className="flex flex-col-reverse lg:w-1/2" variants={itemVariants}>
             {/* Thumbnails */}
-            <motion.div className="flex gap-3 mt-4 overflow-x-auto pb-2" variants={itemVariants}>
-              {initialProduct.pictures?.map((img, idx) => (
-                <motion.div
-                  key={idx}
-                  onClick={() => setSelectedImage(img)}
-                  className={`cursor-pointer flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
-                    selectedImage === img ? 'border-black' : 'border-gray-200 hover:border-gray-400'
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Image 
-                    src={img} 
-                    alt={`${initialProduct.name} ${idx + 1}`} 
-                    width={60} 
-                    height={80}
-                    className="object-cover"
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
+            {initialProduct.pictures && initialProduct.pictures.length > 1 && (
+              <motion.div className="flex gap-3 mt-4 overflow-x-auto pb-2" variants={itemVariants}>
+                {initialProduct.pictures.map((img, idx) => (
+                  <motion.div
+                    key={idx}
+                    onClick={() => setSelectedImage(img)}
+                    className={`cursor-pointer flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
+                      selectedImage === img ? 'border-black' : 'border-gray-200 hover:border-gray-400'
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Image 
+                      src={img} 
+                      alt={`${initialProduct.name} ${idx + 1}`} 
+                      width={60} 
+                      height={80}
+                      className="object-cover"
+                    />
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
             
             {/* Main Image */}
             <AnimatePresence mode="wait">
               <motion.div 
                 key={selectedImage}
-                className="rounded-xl overflow-hidden bg-gray-50"
+                className="rounded-xl overflow-hidden bg-gray-50 aspect-[4/5] relative"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.4 }}
                 whileHover={{ scale: 1.02 }}
               >
-                <Image 
-                  src={selectedImage} 
-                  alt={initialProduct.name} 
-                  width={500} 
-                  height={600}
-                  className="w-full object-cover"
-                  priority
-                />
+                {selectedImage && (
+                  <Image 
+                    src={selectedImage} 
+                    alt={initialProduct.name} 
+                    fill
+                    className="object-cover"
+                    priority
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                )}
               </motion.div>
             </AnimatePresence>
           </motion.div>
@@ -175,7 +224,9 @@ export default function ProductDetailClientSSG({
           <motion.div className="flex flex-col gap-6 lg:w-1/2" variants={itemVariants}>
             <motion.div variants={itemVariants}>
               <h1 className="text-3xl font-bold text-gray-900 mb-3">{initialProduct.name}</h1>
-              <p className="text-gray-600 text-lg leading-relaxed">{initialProduct.description}</p>
+              <p className="text-gray-600 text-lg leading-relaxed">
+                {initialProduct.description || "High-quality fashion item from Wn Store"}
+              </p>
             </motion.div>
 
             {/* السعر */}
@@ -203,7 +254,7 @@ export default function ProductDetailClientSSG({
             {initialProduct.colors && initialProduct.colors.length > 0 && (
               <motion.div variants={itemVariants}>
                 <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
-                  Color: {selectedColor}
+                  Color: {selectedColor || "Please select"}
                 </h3>
                 <div className="flex gap-3">
                   {initialProduct.colors.map((color, idx) => {
@@ -235,14 +286,14 @@ export default function ProductDetailClientSSG({
             )}
 
             {/* مقاسات - Hidden for bags */}
-            {!isBag && (
+            {!isBag && initialProduct.sizes && initialProduct.sizes.length > 0 && (
               <motion.div variants={itemVariants}>
                 <h3 className="text-sm font-semibold text-gray-900 mb-3 uppercase tracking-wide">
                   Size: {selectedSize || "Please select"}
                 </h3>
                 <div className="flex gap-3">
                   {["S", "M", "L", "XL"].map((size) => {
-                    const isAvailable = initialProduct.sizes?.includes(size)
+                    const isAvailable = initialProduct.sizes.includes(size)
                     const isSelected = selectedSize === size
                     return (
                       <motion.button
@@ -312,15 +363,15 @@ export default function ProductDetailClientSSG({
                 variants={itemVariants}
               >
                 <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <span className="bgg">🚚</span>
+                  <span className="text-purple-600">🚚</span>
                   <span>Free shipping over 2000 LE</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <span className="bgg">🔄</span>
+                  <span className="text-purple-600">🔄</span>
                   <span>30-day returns</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <span className="bgg">⭐</span>
+                  <span className="text-purple-600">⭐</span>
                   <span>Authentic guarantee</span>
                 </div>
               </motion.div>
@@ -328,8 +379,8 @@ export default function ProductDetailClientSSG({
           </motion.div>
         </motion.div>
 
-        {/* Related Products Section - Using initial data */}
-        {initialRelatedProducts.length > 0 && (
+        {/* Related Products Section */}
+        {initialRelatedProducts && initialRelatedProducts.length > 0 && (
           <motion.div
             variants={itemVariants}
             transition={{ delay: 0.3 }}
@@ -353,155 +404,68 @@ export default function ProductDetailClientSSG({
               className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
               variants={containerVariants}
             >
-              {initialRelatedProducts.map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  variants={itemVariants}
-                  whileHover={{ y: -4 }}
-                  className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
-                  onMouseEnter={() => setHoveredId(product.id)}
-                  onMouseLeave={() => setHoveredId(null)}
-                >
-                  {/* صورة المنتج */}
-                  <div className="relative overflow-hidden bg-gray-50">
-                    <Image
-                      src={
-                        hoveredId === product.id
-                          ? product.pictures?.[1] || product.pictures?.[0]
-                          : product.pictures?.[0] || "/placeholder.png"
-                      }
-                      alt={product.name}
-                      className="w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      width={300}
-                      height={400}
-                    />
+              {initialRelatedProducts.slice(0, 8).map((product, index) => (
+                <Link href={`/product/${product.id}`} key={product.id}>
+                  <motion.div
+                    variants={itemVariants}
+                    whileHover={{ y: -4 }}
+                    className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
+                    onMouseEnter={() => setHoveredId(product.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                  >
+                    {/* صورة المنتج */}
+                    <div className="relative overflow-hidden bg-gray-50 aspect-[4/5]">
+                      <ProductImage
+                        product={product}
+                        isHovered={hoveredId === product.id}
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
 
-                    {/* Badge للمنتجات المخفضة */}
-                    {product.newprice && (
-                      <motion.div
-                        initial={{ scale: 0, rotate: -12 }}
-                        animate={{ scale: 1, rotate: -12 }}
-                        transition={{ duration: 0.3, delay: 0.2 }}
-                        className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium"
-                      >
-                        Sale
-                      </motion.div>
-                    )}
-
-                    {/* نقاط الألوان */}
-                    {product.colors?.length > 1 && (
-                      <motion.div 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.3, delay: 0.2 }}
-                        className="absolute bottom-3 right-3 flex gap-1"
-                      >
-                        {product.colors.slice(0, 3).map((color, idx) => (
-                          <motion.div
-                            key={idx}
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ 
-                              duration: 0.2, 
-                              delay: 0.3 + (idx * 0.1),
-                              ease: "easeOut"
-                            }}
-                            whileHover={{ scale: 1.3 }}
-                            className="w-3 h-3 rounded-full border-2 border-white shadow-sm"
-                            style={{ backgroundColor: color }}
-                          />
-                        ))}
-                        {product.colors.length > 3 && (
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ duration: 0.2, delay: 0.6 }}
-                            className="w-3 h-3 rounded-full bg-gray-400 border-2 border-white shadow-sm flex items-center justify-center"
-                          >
-                            <span className="text-white text-xs font-bold">+</span>
-                          </motion.div>
-                        )}
-                      </motion.div>
-                    )}
-                  </div>
-
-                  {/* معلومات المنتج */}
-                  <div className="p-5">
-                    <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
-                      {product.name.length > 40
-                        ? product.name.slice(0, 40) + "..."
-                        : product.name}
-                    </h3>
-                    
-                    {/* السعر */}
-                    <div className="flex items-center justify-between mb-4">
-                      {product.newprice ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg font-semibold text-gray-900">
-                            {product.newprice} LE
-                          </span>
-                          <span className="text-sm text-gray-500 line-through">
-                            {product.price} LE
-                          </span>
+                      {/* Badge للمنتجات المخفضة */}
+                      {product.newprice && (
+                        <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                          Sale
                         </div>
-                      ) : (
-                        <span className="text-lg font-semibold text-gray-900">
-                          {product.price} LE
-                        </span>
                       )}
                     </div>
 
-                    {/* المقاسات المتاحة */}
-                    {product.sizes && product.sizes.length > 0 && (
-                      <div className="flex gap-1 mb-4">
-                        {product.sizes.slice(0, 4).map((size, idx) => (
-                          <motion.span
-                            key={idx}
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: idx * 0.1 }}
-                            className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded"
-                          >
-                            {size}
-                          </motion.span>
-                        ))}
+                    {/* معلومات المنتج */}
+                    <div className="p-4">
+                      <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
+                        {product.name}
+                      </h3>
+                      
+                      {/* السعر */}
+                      <div className="flex items-center gap-2 mb-4">
+                        {product.newprice ? (
+                          <>
+                            <span className="text-lg font-semibold text-gray-900">
+                              {product.newprice} LE
+                            </span>
+                            <span className="text-sm text-gray-500 line-through">
+                              {product.price} LE
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-lg font-semibold text-gray-900">
+                            {product.price} LE
+                          </span>
+                        )}
                       </div>
-                    )}
 
-                    {/* زرار المشاهدة */}
-                    <Link href={`/product/${product.id}`}>
-                      <motion.button 
-                        className="w-full bg-black text-white py-2.5 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+                      {/* زرار المشاهدة */}
+                      <motion.div 
+                        className="w-full bg-black text-white py-2.5 rounded-lg text-center text-sm font-medium hover:bg-gray-800 transition-colors"
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
                         View Details
-                      </motion.button>
-                    </Link>
-                  </div>
-                </motion.div>
+                      </motion.div>
+                    </div>
+                  </motion.div>
+                </Link>
               ))}
             </motion.div>
-
-            {/* زرار عرض المزيد */}
-            {initialRelatedProducts.length >= 8 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.6 }}
-                className="text-center mt-8"
-              >
-                <Link href="/store">
-                  <motion.button
-                    className="px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-black hover:text-black transition-colors font-medium"
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    View More Products
-                  </motion.button>
-                </Link>
-              </motion.div>
-            )}
           </motion.div>
         )}
       </motion.div>
