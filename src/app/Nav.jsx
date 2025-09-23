@@ -58,11 +58,13 @@ export default function Navbar() {
                       scrolled ? "bgg" : "text-white"
                     } shadow-2xl shadow-black`}
                     icon={faCartShopping}
+                    aria-label="View cart"
                   />
                   {cartCount > 0 && (
                     <motion.span
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
+                      aria-label="View cart"
                       whileHover={{ scale: 1.1 }}
                       transition={{
                         type: "spring",
@@ -81,6 +83,7 @@ export default function Navbar() {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 transition={{ duration: 0.2 }}
+                aria-label="Contact us on WhatsApp"
               >
                 <Link href="https://wa.me/+201211661802" className="m-2">
                   <FontAwesomeIcon
@@ -88,6 +91,7 @@ export default function Navbar() {
                       scrolled ? "bgg" : "text-white"
                     } shadow-2xl shadow-black`}
                     icon={faWhatsapp}
+                    aria-label="Contact us on WhatsApp"
                   />
                 </Link>
               </motion.div>
