@@ -1,17 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable React Strict Mode للتأكد من جودة الكود
+  // تفعيل React Strict Mode
   reactStrictMode: true,
   
-  // 🔥 تحسينات البناء الأساسية
-  experimental: {
-    // تحسين memory usage
-    optimizePackageImports: ['framer-motion', 'lucide-react'],
-    // تقليل حجم البيانات المسموح
-    largePageDataBytes: 64 * 1024, // 64KB بدلاً من default
-  },
-
-  // Images optimization - محسن للأداء
+  // إعدادات الصور الأساسية
   images: {
     remotePatterns: [
       {
@@ -23,57 +15,43 @@ const nextConfig = {
         hostname: "images.unsplash.com",
       },
     ],
-    // تحسين الصور للأداء الأفضل
-    formats: ['image/webp'], // WebP فقط لتوفير المساحة
-    deviceSizes: [640, 1080, 1200], // تقليل عدد الأحجام
-    imageSizes: [64, 128, 256], // تقليل أحجام الصور الصغيرة
-    minimumCacheTTL: 60, // Cache مؤقت للبناء
+    // تحسين بسيط للصور
+    formats: ['image/webp'],
+    deviceSizes: [640, 1080, 1200],
+    imageSizes: [64, 128, 256],
   },
 
-  // تحسين الoutput للproduction
+  // إعدادات الإخراج
   output: 'standalone',
   
-  // Enable static optimization
-  trailingSlash: false,
-  
-  // Compress responses
+  // تفعيل الضغط
   compress: true,
   
-  // PoweredBy header removal للأمان
+  // إخفاء powered by header
   poweredByHeader: false,
 
-  // 🔥 تحسينات Webpack لتقليل الذاكرة
-  webpack: (config, { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }) => {
-    // تحسين bundle size في الإنتاج
+  // إعدادات بسيطة لتجنب مشاكل البناء
+  trailingSlash: false,
+
+  // تحسين webpack بسيط
+  webpack: (config, { dev }) => {
+    // في الإنتاج، قسم الملفات لتحسين الأداء
     if (!dev) {
       config.optimization.splitChunks = {
         chunks: 'all',
-        minSize: 10000, // أصغر حجم للتقسيم
-        maxSize: 150000, // أكبر حجم للملف الواحد
-        cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
-            priority: 10
-          }
-        }
+        maxSize: 200000,
       }
-      
-      // تقليل استهلاك الذاكرة
-      config.optimization.minimize = true
     }
     
     return config
   },
 
-  // Headers للأمان والأداء - مبسطة
+  // Headers بسيطة للأمان
   async headers() {
     return [
       {
         source: '/(.*)',
         headers: [
-          // Security headers أساسية
           {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
@@ -84,30 +62,10 @@ const nextConfig = {
           },
         ],
       },
-      {
-        // Cache headers للصور
-        source: '/images/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=3600',
-          },
-        ],
-      },
-      {
-        // API routes caching مؤقت
-        source: '/api/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control', 
-            value: 'public, s-maxage=60',
-          },
-        ],
-      },
     ]
   },
 
-  // Redirects مبسطة
+  // Redirects أساسية
   async redirects() {
     return [
       {
@@ -118,22 +76,9 @@ const nextConfig = {
     ]
   },
 
-  // 🔥 إعدادات مهمة لتجنب build timeout
-  typescript: {
-    ignoreBuildErrors: false, // Keep TypeScript checking
-  },
-  
-  eslint: {
-    ignoreDuringBuilds: false, // Keep ESLint checking
-  },
-
-  // تحسينات إضافية
-  swcMinify: true, // استخدم SWC للتصغير
-  
-  // تقليل عدد الworkers في البناء
-  onDemandEntries: {
-    maxInactiveAge: 15 * 1000, // 15 seconds
-    pagesBufferLength: 2, // عدد الصفحات في الذاكرة
+  // إيقاف التليمتري لتوفير الوقت
+  env: {
+    NEXT_TELEMETRY_DISABLED: '1'
   },
 }
 

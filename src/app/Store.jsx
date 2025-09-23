@@ -73,6 +73,7 @@ export const metadata = {
 /**
  * إعدادات الcache للأداء الأمثل - محسنة
  */
-export const revalidate = 3600 // 1 hour بدلاً من false
-export const dynamic = 'auto' // بدلاً من force-static
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export const fetchCache = 'default-cache' // بدلاً من force-cache

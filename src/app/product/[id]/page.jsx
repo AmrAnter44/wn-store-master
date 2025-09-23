@@ -132,6 +132,6 @@ export async function generateMetadata({ params }) {
 /**
  * إعدادات الcache والأداء - محسنة لتجنب build timeout
  */
-export const revalidate = 3600 // بدلاً من false، استخدم 1 ساعة
-export const dynamic = 'auto' // بدلاً من force-static
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 export const dynamicParams = true
