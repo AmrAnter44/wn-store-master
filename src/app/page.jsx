@@ -1,11 +1,10 @@
-// app/page.jsx - Build Optimized
+// app/page.jsx - Fixed for Vercel Deployment
 import Nav from "./Nav"
 import StoreSSG from "../app/StoreSSG"
 import { getAllProducts, getSaleProducts, getProductCategories } from "@/lib/productService"
 
 /**
- * Home Page with Build Optimization
- * Uses static fallback data during build to prevent timeouts
+ * ✅ FIXED: Home Page without Build Mode Issues
  */
 export default async function Home() {
   console.log('🏠 Building home page...')
@@ -15,32 +14,41 @@ export default async function Home() {
   let categories = []
   
   try {
-    // Enable build mode to use fallback data and prevent timeouts
-    const buildMode = process.env.NODE_ENV === 'production' && process.env.VERCEL_ENV === 'production'
+    // ✅ FIXED: Always fetch real data, let fallbacks handle errors
+    console.log('📡 Fetching data from Supabase...')
     
-    console.log(`Build mode: ${buildMode}`)
-    
-    // Parallel data fetching with timeout protection
-    const dataPromises = [
-      getAllProducts(false, buildMode),
-      getSaleProducts(4, buildMode),
-      getProductCategories(buildMode)
-    ]
-    
-    // Set overall timeout for data fetching
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Data fetch timeout')), 15000) // 15s max
-    )
-    
-    const [productsData, saleData, categoriesData] = await Promise.race([
-      Promise.all(dataPromises),
-      timeoutPromise
+    // Parallel data fetching with individual error handling
+    const [productsResult, saleResult, categoriesResult] = await Promise.allSettled([
+      getAllProducts(false),
+      getSaleProducts(4),
+      getProductCategories()
     ])
     
-    allProducts = productsData || []
-    saleProducts = saleData || []
-    categories = categoriesData || []
+    // Handle each result individually
+    if (productsResult.status === 'fulfilled') {
+      allProducts = productsResult.value || []
+      console.log(`✅ Products loaded: ${allProducts.length}`)
+    } else {
+      console.error('❌ Failed to load products:', productsResult.reason)
+      allProducts = []
+    }
     
+    if (saleResult.status === 'fulfilled') {
+      saleProducts = saleResult.value || []
+      console.log(`✅ Sale products loaded: ${saleProducts.length}`)
+    } else {
+      console.error('❌ Failed to load sale products:', saleResult.reason)
+      saleProducts = []
+    }
+    
+    if (categoriesResult.status === 'fulfilled') {
+      categories = categoriesResult.value || []
+      console.log(`✅ Categories loaded: ${categories.length}`)
+    } else {
+      console.error('❌ Failed to load categories:', categoriesResult.reason)
+      categories = []
+    }
+
     console.log(`✅ Home page data loaded:`)
     console.log(`   - Products: ${allProducts.length}`)
     console.log(`   - Sale products: ${saleProducts.length}`)
@@ -50,7 +58,7 @@ export default async function Home() {
     console.error('❌ Error loading home page data:', error)
     
     // Use empty fallback to prevent build failure
-    console.log('⚠️ Using empty fallback data')
+    console.log('⚠️ Using empty fallback data for home page')
     allProducts = []
     saleProducts = []
     categories = []
@@ -119,9 +127,9 @@ export const metadata = {
 }
 
 /**
- * Build Configuration - Optimized for Vercel
+ * ✅ FIXED: Build Configuration for Vercel
  */
-export const dynamic = 'force-static' // Changed to static
-export const revalidate = 3600 // Revalidate every hour
-export const fetchCache = 'force-cache'
+export const dynamic = 'force-dynamic' // Allow real data fetching
+export const revalidate = 0 // Disable static caching, use in-memory cache instead
+export const fetchCache = 'default-cache'
 export const preferredRegion = 'auto'

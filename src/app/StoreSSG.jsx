@@ -21,8 +21,7 @@ const itemVariants = {
 }
 
 /**
- * Store Component محسن للـ SSG
- * يستقبل البيانات الثابتة من السيرفر ويعملها filter في الclient
+ * Store Component محسن للـ SSG بدون Hydration Issues
  */
 export default function StoreSSG({ 
   initialProducts = [], 
@@ -39,41 +38,27 @@ export default function StoreSSG({
   const [showFilters, setShowFilters] = useState(false)
   const [sortBy, setSortBy] = useState("newest")
   const [hoveredId, setHoveredId] = useState(null)
-  const [mounted, setMounted] = useState(false)
-
-  // Fix hydration issues
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   console.log(`🏪 StoreSSG rendered with ${initialProducts.length} products`)
 
-  // Product Image Component مع fallback محسن
+  // Product Image Component مع fallback محسن بدون hydration issues
   const ProductImage = ({ product, isHovered, className, priority = false }) => {
     const [imageSrc, setImageSrc] = useState(product.pictures?.[0] || "/placeholder.png")
     const [imageError, setImageError] = useState(false)
 
     useEffect(() => {
-      if (!mounted) return
-      
       if (isHovered && product.pictures?.[1]) {
         setImageSrc(product.pictures[1])
       } else if (product.pictures?.[0]) {
         setImageSrc(product.pictures[0])
       }
-    }, [isHovered, product.pictures, mounted])
+    }, [isHovered, product.pictures])
 
     const handleError = () => {
       if (!imageError) {
         setImageSrc('https://dfurfmrwpyotjfrryatn.supabase.co/storage/v1/object/public/product-images/casual.png')
         setImageError(true)
       }
-    }
-
-    if (!mounted) {
-      return (
-        <div className={`bg-gray-200 ${className}`} />
-      )
     }
 
     return (
@@ -136,15 +121,8 @@ export default function StoreSSG({
     return Math.round(((originalPrice - salePrice) / originalPrice) * 100)
   }
 
-  // Show loading state until mounted
-  if (!mounted) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-      </div>
-    )
-  }
-
+  // ✅ إزالة الـ loading state المسبب للـ hydration mismatch
+  // Show content directly بدلاً من الـ mounted check
   return (
     <motion.div 
       initial="hidden"
@@ -442,7 +420,7 @@ export default function StoreSSG({
                     )}
 
                     {/* Color Dots */}
-                    {mounted && product.colors?.length > 1 && (
+                    {product.colors?.length > 1 && (
                       <div className="absolute bottom-3 right-3 flex gap-1">
                         {product.colors.slice(0, 4).map((color, idx) => (
                           <div
@@ -485,7 +463,7 @@ export default function StoreSSG({
                     </div>
 
                     {/* Available Sizes - Hidden for bags */}
-                    {mounted && product.sizes && product.sizes.length > 0 && product.type?.toLowerCase() !== "bag" && (
+                    {product.sizes && product.sizes.length > 0 && product.type?.toLowerCase() !== "bag" && (
                       <div className="flex gap-1 mb-4">
                         <span className="text-xs text-gray-500 mr-2">Sizes:</span>
                         {product.sizes.slice(0, 4).map((size, idx) => (
