@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 // Animation variants
 const containerVariants = {
-  hidden: { opacity: 0 },
+  hidden: { opacity: 1 }, // ✅ FIXED: إزالة الإخفاء الأولي
   visible: {
     opacity: 1,
     transition: {
@@ -19,8 +19,8 @@ const containerVariants = {
 
 const formVariants = {
   hidden: { 
-    opacity: 0, 
-    y: 30 
+    opacity: 1, // ✅ FIXED: إزالة الإخفاء الأولي
+    y: 0 // ✅ FIXED: إزالة الحركة الأولية
   },
   visible: {
     opacity: 1,
@@ -34,8 +34,8 @@ const formVariants = {
 
 const inputVariants = {
   hidden: { 
-    opacity: 0, 
-    x: -20 
+    opacity: 1, // ✅ FIXED: إزالة الإخفاء الأولي
+    x: 0 // ✅ FIXED: إزالة الحركة الأولية
   },
   visible: {
     opacity: 1,
@@ -74,8 +74,8 @@ const errorVariants = {
 
 const buttonVariants = {
   hidden: { 
-    opacity: 0, 
-    y: 20 
+    opacity: 1, // ✅ FIXED: إزالة الإخفاء الأولي
+    y: 0 // ✅ FIXED: إزالة الحركة الأولية
   },
   visible: {
     opacity: 1,
