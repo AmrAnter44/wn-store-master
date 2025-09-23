@@ -348,7 +348,7 @@ export default function StorePage() {
                     </div>
 
                     {/* Image Container */}
-                    <div className="relative overflow-hidden bg-gray-50 h-64">
+                    <div className="relative overflow-hidden bg-gray-50 h-96">
                       <ProductImage
                         product={product}
                         hoveredId={hoveredId}
@@ -386,15 +386,7 @@ export default function StorePage() {
               ))}
             </div>
 
-            {saleProducts.length > 4 && (
-              <div className="text-center mt-8">
-                <Link href="/sale">
-                  <button className="bg text-white px-8 py-3 rounded-full hover:from-fuchsia-600 hover:to-fuchsia-600 transition-all font-medium">
-                    View All Sale Items ({saleProducts.length})
-                  </button>
-                </Link>
-              </div>
-            )}
+
           </motion.div>
         )}
 
@@ -630,7 +622,7 @@ export default function StorePage() {
                   onMouseLeave={() => setHoveredId(null)}
                 >
                   {/* Image Container */}
-                  <div className="relative overflow-hidden bg-gray-50 h-64">
+                  <div className="relative overflow-hidden bg-gray-50 h-96">
                     <ProductImage
                       product={product}
                       hoveredId={hoveredId}
