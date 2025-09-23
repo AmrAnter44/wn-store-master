@@ -91,7 +91,7 @@ export default function Navbar() {
                       scrolled ? "bgg" : "text-white"
                     } shadow-2xl shadow-black`}
                     icon={faWhatsapp}
-                    aria-label="Contact us on WhatsApp"
+
                   />
                 </Link>
               </motion.div>
