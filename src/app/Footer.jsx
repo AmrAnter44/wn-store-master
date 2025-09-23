@@ -58,7 +58,7 @@ export default function Footer() {
         
         <motion.div 
           variants={itemVariants}
-          className="text-lg font-semibold mb-4 md:mb-0 text-white"
+          className="text-lg font-semibold mb-4 md:mb-0 text-black"
         >
           © {new Date().getFullYear()} Wn store
         </motion.div>
@@ -74,7 +74,7 @@ export default function Footer() {
             href="https://facebook.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-white hover:text-blue-600 transition-colors duration-200"
+            className="text-black hover:text-blue-600 transition-colors duration-200"
           >
             <Facebook size={22} />
           </motion.a>
@@ -86,7 +86,7 @@ export default function Footer() {
             href="https://www.instagram.com/wn_store_eg_2025/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-white hover:text-pink-500 transition-colors duration-200"
+            className="text-black hover:text-pink-500 transition-colors duration-200"
           >
             <Instagram size={22} />
           </motion.a>
@@ -96,13 +96,13 @@ export default function Footer() {
             whileHover="hover"
             whileTap="tap"
             href="mailto:your@email.com"
-            className="text-white hover:text-green-500 transition-colors duration-200"
+            className="text-black hover:text-green-500 transition-colors duration-200"
           >
             <Mail size={22} />
           </motion.a>
         </motion.div>
       </div >
-            <p className="text-center bg w-full mt-3">
+            <p className="text-center bg w-full mt-3 text-black">
         Direct by{" "}
         <a href="https://tamyaz.online/" className="text-black  ">
           Tamyaz

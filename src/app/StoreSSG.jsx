@@ -476,7 +476,7 @@ export default function StoreSSG({
                     {/* Available Sizes - Hidden for bags */}
                     {product.sizes && product.sizes.length > 0 && product.type?.toLowerCase() !== "bag" && (
                       <div className="flex gap-1 mb-4">
-                        <span className="text-xs text-gray-500 mr-2">Sizes:</span>
+                        <span className="text-xs text-gray-900 mr-2">Sizes:</span>
                         {product.sizes.slice(0, 4).map((size, idx) => (
                           <span
                             key={idx}
