@@ -207,11 +207,11 @@ export default function RelatedProducts({ currentProduct }) {
               {/* زرار المشاهدة */}
               <Link href={`/product/${product.id}`}>
                 <motion.button 
-                  className="w-full bg-black text-white py-2.5 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+                  className="w-full bg text-black py-2.5 rounded-lg  transition-colors text-sm font-medium"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  View Details
+                  Shop now
                 </motion.button>
               </Link>
             </div>
