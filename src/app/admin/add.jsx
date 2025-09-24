@@ -27,7 +27,7 @@ const inputVariants = {
 }
 
 /**
- * AddProduct مع Manual Revalidation
+ * ✅ FIXED: AddProduct with Manual Update Messages
  */
 export default function AddProductWithRevalidation() {
   const [name, setName] = useState("")
@@ -191,40 +191,8 @@ export default function AddProductWithRevalidation() {
   }
 
   /**
-   * Manual Revalidation بعد إضافة المنتج
+   * ✅ UPDATED: handleSubmit with Manual Update Message
    */
-  const triggerRevalidation = async (productId) => {
-    try {
-      console.log('🔄 Triggering revalidation after product addition...')
-      
-      const response = await fetch('/api/revalidate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'add',
-          productId: productId,
-          paths: ['/', '/store'] // الصفحات اللي هتتحدث
-        })
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        console.log('✅ Revalidation successful:', result)
-        setMessage("✅ Product added and website updated successfully!")
-      } else {
-        console.error('❌ Revalidation failed:', result.error)
-        setMessage("⚠️ Product added but website update failed. Use 'Update Website' button.")
-      }
-
-    } catch (error) {
-      console.error('❌ Revalidation error:', error)
-      setMessage("⚠️ Product added but website update failed. Use 'Update Website' button.")
-    }
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -269,9 +237,6 @@ export default function AddProductWithRevalidation() {
       const result = await res.json()
 
       if (res.ok) {
-        // Get product ID from result (object now)
-        const productId = result?.id || 'new'
-        
         // Clean URLs from memory
         previewUrls.forEach(url => URL.revokeObjectURL(url))
         
@@ -289,10 +254,15 @@ export default function AddProductWithRevalidation() {
         const fileInput = document.querySelector('input[type="file"]')
         if (fileInput) fileInput.value = ''
         
-        // Trigger revalidation
-        await triggerRevalidation(productId)
+        // ✅ UPDATED: رسالة واضحة للتحديث اليدوي
+        setMessage(`✅ "${name}" saved to database successfully!
+
+🚨 IMPORTANT: Go back to Dashboard tab and click "Update Website" button to make this product visible to customers.
+
+The product is saved but NOT live yet - you control when it goes public.`)
         
-        setTimeout(() => setMessage(""), 8000)
+        setTimeout(() => setMessage(""), 15000) // وقت كافي للقراءة
+        
       } else {
         setMessage("Error: " + (result.error || "Error adding product"))
         setTimeout(() => setMessage(""), 5000)
@@ -323,6 +293,23 @@ export default function AddProductWithRevalidation() {
       >
         Add New Product
       </motion.h1>
+
+      {/* ✅ Manual Update Notice */}
+      <motion.div 
+        className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800"
+        variants={inputVariants}
+      >
+        <h4 className="font-semibold mb-2 flex items-center gap-2">
+          <span>💡</span>
+          Manual Update System Active
+        </h4>
+        <ul className="space-y-1 text-xs">
+          <li>• Product will be saved to database</li>
+          <li>• <strong>NOT visible to customers yet</strong></li>
+          <li>• Click "Update Website" in Dashboard to publish</li>
+          <li>• You have full control over when changes go live</li>
+        </ul>
+      </motion.div>
 
       {/* Product Name */}
       <motion.input 
@@ -366,7 +353,7 @@ export default function AddProductWithRevalidation() {
         variants={inputVariants}
       />
 
-      {/* Type - Moved before sizes */}
+      {/* Type */}
       <motion.div variants={inputVariants}>
         <p className="mb-2 font-semibold text-gray-700">Type (required) *:</p>
         <div className="flex flex-wrap gap-2">
@@ -449,7 +436,7 @@ export default function AddProductWithRevalidation() {
         </AnimatePresence>
       </motion.div>
 
-      {/* Sizes - Only show if not a bag */}
+      {/* Sizes */}
       <AnimatePresence>
         {!isBag && (
           <motion.div 
@@ -564,7 +551,7 @@ export default function AddProductWithRevalidation() {
       <AnimatePresence>
         {message && (
           <motion.div 
-            className={`p-4 rounded-lg text-center font-medium ${
+            className={`p-4 rounded-lg text-center font-medium whitespace-pre-line ${
               message.includes("successfully") || message.includes("✅") 
                 ? "text-green-700 bg-green-50 border border-green-200" 
                 : message.includes("Processing") || message.includes("Uploading") || message.includes("Creating")
@@ -615,24 +602,24 @@ export default function AddProductWithRevalidation() {
             ) : uploadingImages ? (
               "Processing Images..."
             ) : (
-              "➕ Add Product"
+              "💾 Save Product to Database"
             )}
           </motion.span>
         </AnimatePresence>
       </motion.button>
 
-      {/* Instructions */}
+      {/* ✅ Bottom Warning */}
       <motion.div 
-        className="mt-4 p-4 bg-gray-50 rounded-lg text-sm text-gray-600"
+        className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800"
         variants={inputVariants}
       >
-        <h4 className="font-semibold mb-2">💡 Instructions:</h4>
-        <ul className="space-y-1 text-xs">
-          <li>• Fill all required fields marked with *</li>
-          <li>• For bags, sizes are not required</li>
-          <li>• Images will be automatically optimized</li>
-          <li>• After adding, the website will update automatically</li>
-        </ul>
+        <div className="flex items-start gap-2">
+          <span className="text-lg">⚠️</span>
+          <div>
+            <div className="font-medium mb-1">Remember:</div>
+            <div>Product will be saved to database but <strong>NOT visible to customers</strong> until you click "Update Website" in the Dashboard.</div>
+          </div>
+        </div>
       </motion.div>
     </motion.form>
   )
