@@ -20,6 +20,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${outfit.className} h-full`}>
       <body className={`${outfit.className} antialiased flex flex-col min-h-screen`}>
+        <link rel="icon" href="/favicon.ico" />
         <Analytics />
         <MyContextProvider>
           <ClientLayoutWrapper className="flex-grow">
